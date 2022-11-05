@@ -6,8 +6,10 @@ import fr.bobinho.bcrate.api.item.BItemBuilder;
 import fr.bobinho.bcrate.api.setting.BSetting;
 import fr.bobinho.bcrate.api.stream.IndexedStream;
 import fr.bobinho.bcrate.api.validate.BValidate;
+import fr.bobinho.bcrate.util.crate.CrateManager;
 import fr.bobinho.bcrate.util.key.listener.KeyListener;
-import fr.bobinho.bcrate.util.key.ux.KeyMenu;
+import fr.bobinho.bcrate.util.key.ux.KeyEditMenu;
+import fr.bobinho.bcrate.util.key.ux.KeyShowMenu;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -27,7 +29,9 @@ public class KeyManager {
      */
     private static final HashMap<String, Key> keys = new HashMap<>();
     private static final BSetting configuration = BCrateCore.getKeySetting();
-    private static final KeyMenu menu = new KeyMenu();
+    private static final KeyEditMenu editMenu = new KeyEditMenu();
+    private static final KeyShowMenu showMenu = new KeyShowMenu();
+
 
     /**
      * Registers the key manager
@@ -123,7 +127,7 @@ public class KeyManager {
         BValidate.notNull(name);
         BValidate.notNull(item);
 
-        keys.put(name, new Key(name, new BItemBuilder(item).name(BColor.color(name)).build()));
+        keys.put(name, new Key(name, new BItemBuilder(item).name(BColor.color(name)).build(), keys.size()));
     }
 
     /**
@@ -135,6 +139,28 @@ public class KeyManager {
         BValidate.notNull(name);
 
         get(name).ifPresent(key -> keys.remove(key.name().get()));
+    }
+
+    /**
+     * Checks if the key is used by a crate
+     *
+     * @param name the name
+     * @return true if the key is used by a crate, false otherwise
+     */
+    public static boolean isUsed(@Nonnull String name) {
+        BValidate.notNull(name);
+
+        return get(name).map(key -> CrateManager.stream().anyMatch(crate -> crate.key().get().equals(key))).orElse(false);
+    }
+
+    /**
+     * Checks if the keys is full
+     *
+     * @return true if the keys is full, false otherwise
+     */
+    public static boolean isFull() {
+
+        return keys.size() >= 54;
     }
 
     /**
@@ -150,15 +176,37 @@ public class KeyManager {
         get(name).ifPresent(key -> player.getInventory().addItem(new BItemBuilder(key.item().get()).amount(amount).build()));
     }
 
+
     /**
-     * Opens the key menu
+     * Opens the key edit menu
      *
      * @param player the player
      */
-    public static void openMenu(@Nonnull Player player) {
+    public static void openEditMenu(@Nonnull Player player) {
         BValidate.notNull(player);
 
-        menu.openInventory(player);
+        editMenu.openInventory(player);
+    }
+
+    /**
+     * Opens the key show menu
+     *
+     * @param player the player
+     */
+    public static void openShowMenu(@Nonnull Player player) {
+        BValidate.notNull(player);
+
+        showMenu.openInventory(player);
+    }
+
+    /**
+     * Reloads all keys
+     */
+    public static void reload() {
+        keys.clear();
+        configuration.initialize();
+
+        load();
     }
 
     /**
@@ -169,8 +217,9 @@ public class KeyManager {
         //Loads all keys
         configuration.getKeys().forEach(key -> {
             ItemStack item = configuration.getItemStack(key + ".item");
+            int slot = configuration.getInt(key + ".slot");
 
-            create(key, item);
+            keys.put(key, new Key(key, new BItemBuilder(item).name(BColor.color(key)).build(), slot));
         });
     }
 
@@ -181,7 +230,10 @@ public class KeyManager {
         configuration.clear();
 
         //Saves all keys
-        keys.values().forEach(key -> configuration.set(key.name().get() + ".item", key.item().get()));
+        keys.values().forEach(key -> {
+            configuration.set(key.name().get() + ".item", key.item().get());
+            configuration.set(key.name().get() + ".slot", key.slot().get());
+        });
 
         configuration.save();
     }

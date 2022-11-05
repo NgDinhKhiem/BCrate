@@ -36,7 +36,6 @@ public final class BSetting {
         BValidate.notNull(fileName);
 
         this.fileName = fileName;
-
         initialize();
     }
 
@@ -101,6 +100,18 @@ public final class BSetting {
     }
 
     /**
+     * Checks if the path is associated with an int and gets the optional int
+     *
+     * @param path the path
+     * @return the optional int
+     */
+    public @Nonnull Optional<Integer> isInt(@Nonnull String path) {
+        BValidate.notNull(path);
+
+        return Optional.ofNullable(configuration.isInt(path) ? configuration.getInt(path) : null);
+    }
+
+    /**
      * Gets the requested double by path
      *
      * @param path the path
@@ -114,6 +125,34 @@ public final class BSetting {
         }
 
         return configuration.getDouble(path);
+    }
+
+    /**
+     * Checks if the path is associated with a double and gets the optional double
+     *
+     * @param path the path
+     * @return the optional double
+     */
+    public @Nonnull Optional<Double> isDouble(@Nonnull String path) {
+        BValidate.notNull(path);
+
+        return Optional.ofNullable(configuration.isDouble(path) ? configuration.getDouble(path) : null);
+    }
+
+    /**
+     * Gets the requested boolean by path
+     *
+     * @param path the path
+     * @return the requested boolean by path
+     */
+    public boolean getBoolean(@Nonnull String path) {
+        BValidate.notNull(path);
+
+        if (!configuration.isBoolean(path)) {
+            throw new IllegalPathStateException();
+        }
+
+        return configuration.getBoolean(path);
     }
 
     /**
@@ -139,6 +178,7 @@ public final class BSetting {
 
         return configuration.getStringList(path);
     }
+
     /**
      * Gets the requested ItemStack by path
      *

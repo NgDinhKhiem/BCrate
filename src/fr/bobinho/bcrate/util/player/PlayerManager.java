@@ -9,6 +9,7 @@ import fr.bobinho.bcrate.util.crate.Crate;
 import fr.bobinho.bcrate.util.key.Key;
 import fr.bobinho.bcrate.util.key.KeyManager;
 import fr.bobinho.bcrate.util.player.listener.PlayerListener;
+import fr.bobinho.bcrate.util.prize.Prize;
 import org.bukkit.Bukkit;
 import org.bukkit.inventory.ItemStack;
 
@@ -85,6 +86,7 @@ public class PlayerManager {
         BValidate.notNull(uuid);
 
         players.put(uuid, new BPlayer(uuid));
+        KeyManager.stream().forEach(key -> configuration.isInt(uuid + "." + key.name().get()).ifPresent(amount -> addKey(uuid, key, amount)));
     }
 
     /**
@@ -160,14 +162,14 @@ public class PlayerManager {
      * @param items the rewards
      * @return true if the player can play, false otherwise
      */
-    public static boolean canPlay(@Nonnull UUID uuid, @Nonnull List<ItemStack> items) {
+    public static boolean canPlay(@Nonnull UUID uuid, @Nonnull List<Prize> items) {
         BValidate.notNull(uuid);
         BValidate.notNull(items);
 
         //Checks if the player inventory with items will be full
         return Optional.ofNullable(Bukkit.getPlayer(uuid)).map(player ->
                 Bukkit.createInventory(null, 36).addItem(
-                        Streams.concat(Arrays.stream(player.getInventory().getContents()).filter(Objects::nonNull), items.stream())
+                        Streams.concat(Arrays.stream(player.getInventory().getContents()).filter(Objects::nonNull), items.stream().map(item -> item.item().get()))
                                 .toArray(ItemStack[]::new)).isEmpty()
         ).orElse(false);
     }
@@ -185,7 +187,9 @@ public class PlayerManager {
 
         //Checks if the player inventory contains the key
         return Optional.ofNullable(Bukkit.getPlayer(uuid)).map(player ->
-                Arrays.stream(player.getInventory().getContents()).anyMatch(item -> item != null && item.isSimilar(crate.key().get().item().get()))
+                (player.getInventory().getItemInMainHand().isSimilar(crate.key().get().item().get()) &&
+                        player.getInventory().getItemInMainHand().getAmount() >= crate.key().get().item().get().getAmount()) ||
+                        get(uuid).map(bPlayer -> bPlayer.keys().get(crate.key().get()).map(amount -> amount > 0).orElse(false)).orElse(false)
         ).orElse(false);
     }
 
@@ -221,6 +225,16 @@ public class PlayerManager {
         Optional.ofNullable(Bukkit.getPlayer(uuid)).ifPresent(player ->
                 player.getInventory().removeItem(new BItemBuilder(key.item().get()).amount(amount).build()));
         addKey(uuid, key, amount);
+    }
+
+    /**
+     * Reloads all players
+     */
+    public static void reload() {
+        players.clear();
+        configuration.initialize();
+
+        load();
     }
 
     /**

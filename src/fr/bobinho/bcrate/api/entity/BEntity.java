@@ -1,11 +1,13 @@
 package fr.bobinho.bcrate.api.entity;
 
+import fr.bobinho.bcrate.api.location.BLocation;
 import fr.bobinho.bcrate.api.metadata.BMetadata;
 import fr.bobinho.bcrate.api.packet.BPacket;
 import fr.bobinho.bcrate.api.renderer.BRenderer;
 import fr.bobinho.bcrate.api.validate.BValidate;
 import net.minecraft.network.protocol.game.*;
 import net.minecraft.world.entity.Entity;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
@@ -65,9 +67,25 @@ public class BEntity<T extends BEntity<T>> {
      * @return the UUID
      */
     public final @Nonnull UUID getUID() {
-        return this.uuid;
+        return uuid;
     }
 
+    /**
+     * Gets the entity
+     *
+     * @return the entity
+     */
+    protected @Nonnull Entity getEntity() {
+        return entity;
+    }
+
+    /**
+     * Gets the cast entity
+     *
+     * @param type the type
+     * @param <E>
+     * @return the cast entity
+     */
     protected @Nonnull <E extends Entity> E getEntity(@Nonnull Class<E> type) {
         BValidate.notNull(type);
 
@@ -165,7 +183,7 @@ public class BEntity<T extends BEntity<T>> {
         BValidate.notNull(players);
 
         //Calls pre-show action, if it is false, no need to continue
-        if (!this.onPreShow(players)) {
+        if (!onPreShow(players)) {
             return;
         }
 
@@ -174,7 +192,14 @@ public class BEntity<T extends BEntity<T>> {
         BPacket.send(new PacketPlayOutEntityMetadata(entity.getId(), entity.getDataWatcher(), true), players);
 
         //Triggers the on show
-        this.onShow(players);
+        onShow(players);
+    }
+
+    /**
+     * Shows the entity
+     */
+    public final void show() {
+        show((List<Player>) Bukkit.getOnlinePlayers().stream().filter(player -> BLocation.canSee(entity.getBukkitEntity().getLocation(), player.getLocation())).toList());
     }
 
     /**
@@ -186,14 +211,22 @@ public class BEntity<T extends BEntity<T>> {
         BValidate.notNull(players);
 
         //Calls pre-hide action, if it is false, no need to continue
-        if (!this.onPreHide(players))
+        if (!onPreHide(players)) {
             return;
+        }
 
         //Sends the hide packet
         BPacket.send(new PacketPlayOutEntityDestroy(entity.getId()), players);
 
-        //Triggers the on hide.
-        this.onHide(players);
+        //Triggers the on hide
+        onHide(players);
+    }
+
+    /**
+     * Hides the entity
+     */
+    public final void hide() {
+        hide((List<Player>) Bukkit.getOnlinePlayers().stream().filter(player -> BLocation.canSee(entity.getBukkitEntity().getLocation(), player.getLocation())).toList());
     }
 
     /**
@@ -274,6 +307,7 @@ public class BEntity<T extends BEntity<T>> {
      * Teleports the entity
      *
      * @param location the location
+     * @return the entity
      */
     public @Nonnull T teleport(@Nonnull Location location) {
         BValidate.notNull(location);
@@ -297,11 +331,12 @@ public class BEntity<T extends BEntity<T>> {
         renderer.setLocation(location);
 
         //If players are empty, no need to continue
-        if (this.renderer.getShownViewersAsPlayer().isEmpty())
+        if (renderer.getShownViewersAsPlayer().isEmpty()) {
             return;
+        }
 
         //Sends teleport packet
-        BPacket.send(new PacketPlayOutEntityTeleport(this.entity), this.renderer.getShownViewersAsPlayer());
+        BPacket.send(new PacketPlayOutEntityTeleport(entity), renderer.getShownViewersAsPlayer());
 
         //If special rotation needed
         if (rotation) {

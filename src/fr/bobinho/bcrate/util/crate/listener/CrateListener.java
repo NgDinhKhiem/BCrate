@@ -1,5 +1,11 @@
 package fr.bobinho.bcrate.util.crate.listener;
 
+import com.comphenix.protocol.PacketType;
+import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.events.PacketAdapter;
+import com.comphenix.protocol.events.PacketEvent;
+import com.comphenix.protocol.wrappers.EnumWrappers;
+import fr.bobinho.bcrate.BCrateCore;
 import fr.bobinho.bcrate.api.event.BEvent;
 import fr.bobinho.bcrate.api.notification.BPlaceHolder;
 import fr.bobinho.bcrate.util.crate.Crate;
@@ -14,16 +20,15 @@ import fr.bobinho.bcrate.util.key.Key;
 import fr.bobinho.bcrate.util.key.KeyManager;
 import fr.bobinho.bcrate.util.player.PlayerManager;
 import fr.bobinho.bcrate.util.player.notification.PlayerNotification;
+import fr.bobinho.bcrate.util.prize.Prize;
 import fr.bobinho.bcrate.util.prize.PrizeManager;
+import fr.bobinho.bcrate.util.prize.listener.PrizeListener;
 import org.bukkit.Material;
-import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
@@ -34,58 +39,59 @@ import java.util.List;
  */
 public class CrateListener {
 
-
     /**
      * Registers crate listeners
      */
     public static void registerEvents() {
 
-        BEvent.registerEvent(PlayerInteractAtEntityEvent.class)
-                .filter(event -> event.getRightClicked() instanceof ArmorStand)
-                .consume(event -> {
-                    CrateManager.isFromStructure(event.getRightClicked()).ifPresent(crate -> {
-                        event.setCancelled(true);
+        ProtocolLibrary.getProtocolManager().addPacketListener(new PacketAdapter(BCrateCore.getInstance(), PacketType.Play.Client.USE_ENTITY) {
+            public void onPacketReceiving(PacketEvent event) {
+                CrateManager.isFromStructure(event.getPacket().getIntegers().read(0)).ifPresent(crate -> {
 
-                        CrateManager.openShowMenu(event.getPlayer(), crate.name().get());
-                    });
-                });
-
-        BEvent.registerEvent(EntityDamageByEntityEvent.class)
-                .filter(event -> event.getEntity() instanceof ArmorStand)
-                .consume(event -> {
-                    CrateManager.isFromStructure(event.getEntity()).ifPresent(crate -> {
-                        event.setCancelled(true);
-
+                    //Interacts with the crate (left-click)
+                    if (event.getPacket().getEnumEntityUseActions().read(0).getAction() == EnumWrappers.EntityUseAction.ATTACK) {
                         //Checks if the player has the key
-                        if (!PlayerManager.hasKey(event.getDamager().getUniqueId(), crate)) {
-                            event.getDamager().sendMessage(PlayerNotification.PLAYER_HAVENT_KEY.getNotification(new BPlaceHolder("%name%", crate.key().get().name().get())));
+                        if (!PlayerManager.hasKey(event.getPlayer().getUniqueId(), crate)) {
+                            event.getPlayer().sendMessage(PlayerNotification.PLAYER_HAVENT_KEY.getNotification(new BPlaceHolder("%name%", crate.key().get().name().get())));
                             return;
                         }
 
                         //Checks if the player has the key
                         if (CrateManager.isEmpty(crate.name().get())) {
-                            event.getDamager().sendMessage(CrateNotification.CRATE_IS_EMPTY.getNotification());
+                            event.getPlayer().sendMessage(CrateNotification.CRATE_IS_EMPTY.getNotification());
                             return;
                         }
 
                         //Checks if the crate is already used
                         if (!CrateManager.canPlay(crate.name().get())) {
-                            event.getDamager().sendMessage(CrateNotification.CRATE_ALREADY_USED.getNotification());
+                            event.getPlayer().sendMessage(CrateNotification.CRATE_ALREADY_USED.getNotification());
                             return;
                         }
 
-                        List<ItemStack> items = CrateManager.play(crate.name().get());
+                        List<Prize> items = CrateManager.play(crate.name().get());
 
 
                         //Checks if the player inventory is full
-                        if (!PlayerManager.canPlay(event.getDamager().getUniqueId(), items)) {
-                            event.getDamager().sendMessage(PlayerNotification.PLAYER_INVENTORY_FULL.getNotification());
+                        if (!PlayerManager.canPlay(event.getPlayer().getUniqueId(), items)) {
+                            event.getPlayer().sendMessage(PlayerNotification.PLAYER_INVENTORY_FULL.getNotification());
                             return;
                         }
 
-                        crate.wait((Player) event.getDamager(), items.toArray(ItemStack[]::new));
-                    });
+                        //Launchs the crate
+                        crate.wait(event.getPlayer(), items);
+
+                        //Messages
+                        event.getPlayer().sendMessage(CrateNotification.CRATE_LAUNCH.getNotification(new BPlaceHolder("%name%", crate.name().get())));
+                    }
+
+                    //Interacts with the crate (right-click)
+                    else {
+                        BCrateCore.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(BCrateCore.getInstance(), () ->
+                                CrateManager.openShowMenu(event.getPlayer(), crate.name().get()));
+                    }
                 });
+            }
+        });
 
         BEvent.registerEvent(InventoryDragEvent.class)
                 .filter(event -> event.getInventory().getHolder() instanceof CrateShowMenu)
@@ -155,6 +161,11 @@ public class CrateListener {
                 });
 
         BEvent.registerEvent(InventoryClickEvent.class)
+                .filter(event -> event.getInventory().getHolder() instanceof CratePrizeMenu)
+                .filter(InventoryClickEvent::isShiftClick)
+                .consume(event -> event.setCancelled(true));
+
+        BEvent.registerEvent(InventoryClickEvent.class)
                 .filter(event -> event.getClickedInventory() != null)
                 .filter(event -> event.getClickedInventory().getHolder() instanceof CratePrizeMenu)
                 .consume(event -> {
@@ -171,7 +182,6 @@ public class CrateListener {
                                 PrizeManager.openEditMenu((Player) event.getWhoClicked(), prize));
                         return;
                     }
-
                     if (event.getClickedInventory().getType() == InventoryType.PLAYER && !event.getClick().isShiftClick()) {
                         return;
                     }
@@ -183,15 +193,16 @@ public class CrateListener {
                         if (curr.getType() == Material.BARRIER) {
                             return;
                         }
-                        PrizeManager.get(((CratePrizeMenu) event.getClickedInventory().getHolder()).crate().get(), event.getSlot()).ifPresent(prize -> {
-                            double percent = prize.chance().get();
-                            ClickType click = event.getClick();
-                            if ((percent == 100.0 && click.isLeftClick()) || (percent == 1.0 && click.isRightClick()) || (percent > 1.0 && percent < 100.0)) {
-                                percent += ((event.getClick().isRightClick()) ? 1 : -1);
-                            }
-                            prize.chance().set(Math.round(percent * 10.0) / 10.0);
-                            event.setCurrentItem(prize.getEditBackground());
-                        });
+                        event.setCancelled(true);
+                        if (event.isLeftClick()) {
+                            PrizeManager.get(((CratePrizeMenu) event.getClickedInventory().getHolder()).crate().get(), event.getSlot()).ifPresent(prize ->
+                                    PrizeListener.askPrizeChance((Player) event.getWhoClicked(), prize));
+                        } else {
+                            PrizeManager.get(((CratePrizeMenu) event.getClickedInventory().getHolder()).crate().get(), event.getSlot()).ifPresent(prize -> {
+                                PrizeManager.changeRarity(prize);
+                                event.getClickedInventory().setItem(event.getSlot(), prize.getEditBackground());
+                            });
+                        }
                     } else if (onTake(event)) {
                         PrizeManager.get(((CratePrizeMenu) event.getClickedInventory().getHolder()).crate().get(), event.getSlot()).ifPresent(prize -> {
                             event.getWhoClicked().setItemOnCursor(prize.item().get());
@@ -229,7 +240,7 @@ public class CrateListener {
     }
 
     private static boolean onPlace(InventoryClickEvent event) {
-        return event.getCurrentItem() == null && event.getCursor() != null;
+        return (event.getCurrentItem() == null || event.getCurrentItem().getType() == Material.AIR) && event.getCursor() != null && event.getCursor().getType() != Material.AIR;
     }
 
     private static boolean onTake(InventoryClickEvent event) {

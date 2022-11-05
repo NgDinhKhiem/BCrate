@@ -7,14 +7,18 @@ import fr.bobinho.bcrate.util.crate.notification.CrateNotification;
 import fr.bobinho.bcrate.util.key.Key;
 import fr.bobinho.bcrate.util.key.KeyManager;
 import fr.bobinho.bcrate.util.key.notification.KeyNotification;
-import fr.bobinho.bcrate.util.key.ux.KeyMenu;
+import fr.bobinho.bcrate.util.key.ux.KeyEditMenu;
+import fr.bobinho.bcrate.util.key.ux.KeyShowMenu;
 import fr.bobinho.bcrate.util.player.PlayerManager;
 import fr.bobinho.bcrate.util.player.notification.PlayerNotification;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
 
@@ -28,6 +32,7 @@ public class KeyListener {
      */
     public static void registerEvents() {
         onInteractWithKeyMenu();
+        onEditKeys();
         onWithdraw();
         onDeposit();
     }
@@ -37,12 +42,33 @@ public class KeyListener {
      */
     private static void onInteractWithKeyMenu() {
         BEvent.registerEvent(InventoryDragEvent.class)
-                .filter(event -> event.getInventory().getHolder() instanceof KeyMenu)
+                .filter(event -> event.getInventory().getHolder() instanceof KeyShowMenu)
                 .consume(event -> event.setCancelled(true));
 
         BEvent.registerEvent(InventoryClickEvent.class)
-                .filter(event -> event.getInventory().getHolder() instanceof KeyMenu)
+                .filter(event -> event.getInventory().getHolder() instanceof KeyShowMenu)
                 .consume(event -> event.setCancelled(true));
+
+        BEvent.registerEvent(InventoryClickEvent.class)
+                .filter(event -> event.getInventory().getHolder() instanceof KeyEditMenu)
+                .filter(event -> (event.getClick() != ClickType.RIGHT && event.getClick() != ClickType.LEFT) || event.getClickedInventory().getType() == InventoryType.PLAYER)
+                .consume(event -> event.setCancelled(true));
+    }
+
+    /**
+     * Listens keys edit
+     */
+    private static void onEditKeys() {
+        BEvent.registerEvent(InventoryClickEvent.class)
+                .filter(event -> event.getInventory().getHolder() instanceof KeyEditMenu)
+                .consume(event -> {
+                    ItemStack curr = event.getCurrentItem();
+                    ItemStack curs = event.getCursor();
+
+                    if ((event.getCurrentItem() == null || event.getCurrentItem().getType() == Material.AIR) && event.getCursor() != null && event.getCursor().getType() != Material.AIR) {
+                        KeyManager.get(event.getCursor()).ifPresent(key -> key.slot().set(event.getSlot()));
+                    }
+                });
     }
 
     /**
@@ -51,11 +77,11 @@ public class KeyListener {
     private static void onWithdraw() {
         BEvent.registerEvent(InventoryClickEvent.class)
                 .filter(event -> event.getClickedInventory() != null)
-                .filter(event -> event.getClickedInventory().getHolder() instanceof KeyMenu)
+                .filter(event -> event.getClickedInventory().getHolder() instanceof KeyShowMenu)
                 .consume(event -> event.setCancelled(true));
 
         BEvent.registerEvent(InventoryClickEvent.class)
-                .filter(event -> event.getInventory().getHolder() instanceof KeyMenu)
+                .filter(event -> event.getInventory().getHolder() instanceof KeyShowMenu)
                 .filter(event -> event.getCurrentItem() != null)
                 .filter(event -> event.getCurrentItem().getItemMeta() != null)
                 .consume(event -> {
@@ -66,7 +92,6 @@ public class KeyListener {
                     }
 
                     KeyManager.get(event.getCurrentItem()).ifPresent(key -> {
-                        event.getWhoClicked().closeInventory();
                         askKeyNumberToWithdrawn((Player) event.getWhoClicked(), key);
                     });
                 });
@@ -77,7 +102,7 @@ public class KeyListener {
      */
     private static void onDeposit() {
         BEvent.registerEvent(InventoryClickEvent.class)
-                .filter(event -> event.getInventory().getHolder() instanceof KeyMenu)
+                .filter(event -> event.getInventory().getHolder() instanceof KeyShowMenu)
                 .filter(event -> event.getCurrentItem() != null)
                 .filter(event -> event.getCurrentItem().getItemMeta() != null)
                 .consume(event -> {
@@ -88,7 +113,6 @@ public class KeyListener {
                     }
 
                     KeyManager.get(event.getCurrentItem()).ifPresent(key -> {
-                        event.getWhoClicked().closeInventory();
                         askKeyNumberToDeposited((Player) event.getWhoClicked(), key);
                     });
                 });
@@ -102,8 +126,9 @@ public class KeyListener {
      */
     private static void askKeyNumberToWithdrawn(@Nonnull Player player, @Nonnull Key key) {
         BValidate.notNull(player);
-        BValidate.notNull(player);
+        BValidate.notNull(key);
 
+        player.closeInventory();
         player.sendMessage(KeyNotification.KEY_ASK_WITHDRAW.getNotification(new BPlaceHolder("%name%", key.name().get())));
 
         BEvent.registerEvent(AsyncPlayerChatEvent.class)
@@ -154,8 +179,9 @@ public class KeyListener {
      */
     private static void askKeyNumberToDeposited(@Nonnull Player player, @Nonnull Key key) {
         BValidate.notNull(player);
-        BValidate.notNull(player);
+        BValidate.notNull(key);
 
+        player.closeInventory();
         player.sendMessage(KeyNotification.KEY_ASK_DEPOSIT.getNotification(new BPlaceHolder("%name%", key.name().get())));
 
         BEvent.registerEvent(AsyncPlayerChatEvent.class)

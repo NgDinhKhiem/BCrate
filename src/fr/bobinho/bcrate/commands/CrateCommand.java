@@ -10,6 +10,7 @@ import fr.bobinho.bcrate.util.crate.edit.size.Size;
 import fr.bobinho.bcrate.util.crate.notification.CrateNotification;
 import fr.bobinho.bcrate.util.key.Key;
 import fr.bobinho.bcrate.util.key.KeyManager;
+import fr.bobinho.bcrate.util.tag.TagManager;
 import org.bukkit.entity.Player;
 
 import java.util.Optional;
@@ -35,7 +36,7 @@ public final class CrateCommand extends BCommand {
     /**
      * Command crate create
      */
-    @Syntax("/create create <name>")
+    @Syntax("/crate create <name>")
     @Subcommand("create")
     @CommandPermission("crate.create")
     @Description("Creates a crate.")
@@ -87,7 +88,7 @@ public final class CrateCommand extends BCommand {
     /**
      * Command crate edit
      */
-    @Syntax("/create edit <name>")
+    @Syntax("/crate edit <name>")
     @Subcommand("edit")
     @CommandPermission("crate.edit")
     @Description("Edits a crate.")
@@ -101,6 +102,24 @@ public final class CrateCommand extends BCommand {
 
         //Opens the menu
         CrateManager.openEditMenu(sender, name);
+    }
+
+    /**
+     * Command crate reload
+     */
+    @Syntax("/crate reload")
+    @Subcommand("reload")
+    @CommandPermission("crate.reload")
+    @Description("Reloads crate system.")
+    public void onCommandCrateReload(Player sender) {
+
+        //Loads the plugin
+        KeyManager.reload();
+        TagManager.reload();
+        CrateManager.reload();
+
+        //Messages
+        sender.sendMessage(CrateNotification.CRATE_RELOADED.getNotification());
     }
 
 }

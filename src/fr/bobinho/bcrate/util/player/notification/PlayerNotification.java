@@ -15,7 +15,8 @@ public enum PlayerNotification implements BNotification {
     PLAYER_NOT_REGISTERED,
     PLAYER_INVENTORY_FULL,
     PLAYER_HAVENT_KEY,
-    PLAYER_GIVE_KEY;
+    PLAYER_GIVE_KEY,
+    PLAYER_EMPTY_HAND;
 
     /**
      * {@inheritDoc}
@@ -30,13 +31,13 @@ public enum PlayerNotification implements BNotification {
      */
     @Override
     public @Nonnull String getNotification(@Nonnull BPlaceHolder... placeholders) {
-        String notification = BColor.color(BCrateCore.getLangSetting().getString(name()));
+        String notification = BCrateCore.getLangSetting().getString(name());
 
         for (BPlaceHolder placeHolder : placeholders) {
             notification = notification.replaceAll(placeHolder.getOldValue(), placeHolder.getReplacement());
         }
 
-        return notification;
+        return BColor.color(notification);
     }
 
     /**
@@ -44,15 +45,15 @@ public enum PlayerNotification implements BNotification {
      */
     @Override
     public @Nonnull List<String> getNotifications(@Nonnull BPlaceHolder... placeholders) {
-        List<String> notifications = BCrateCore.getLangSetting().getConfigurationSection(name()).stream().toList();
+        List<String> notifications = BCrateCore.getLangSetting().getStringList(name()).stream().toList();
 
-        for (String notification : notifications) {
+        return notifications.stream().map(notification -> {
             for (BPlaceHolder placeHolder : placeholders) {
                 notification = notification.replaceAll(placeHolder.getOldValue(), placeHolder.getReplacement());
             }
-        }
 
-        return notifications;
+            return BColor.color(notification);
+        }).toList();
     }
 
 }

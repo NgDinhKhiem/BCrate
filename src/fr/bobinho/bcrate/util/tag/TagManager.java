@@ -121,6 +121,16 @@ public class TagManager {
     }
 
     /**
+     * Reloads all tags
+     */
+    public static void reload() {
+        tags.clear();
+        configuration.initialize();
+
+        load();
+    }
+
+    /**
      * Loads all tags
      */
     public static void load() {

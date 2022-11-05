@@ -25,7 +25,11 @@ public enum CrateNotification implements BNotification {
     CRATE_PRIZE_INFO,
     CRATE_ALREADY_USED,
     CRATE_IS_EMPTY,
-    UTIL_NOT_A_NUMBER;
+    CRATE_LAUNCH,
+    CRATE_RELOADED,
+    CRATE_PRIZE_INFO_GLOBAL,
+    UTIL_NOT_A_NUMBER,
+    UTIL_NOT_ONLINE;
 
     /**
      * {@inheritDoc}
@@ -40,13 +44,13 @@ public enum CrateNotification implements BNotification {
      */
     @Override
     public @Nonnull String getNotification(@Nonnull BPlaceHolder... placeholders) {
-        String notification = BColor.color(BCrateCore.getLangSetting().getString(name()));
+        String notification = BCrateCore.getLangSetting().getString(name());
 
         for (BPlaceHolder placeHolder : placeholders) {
             notification = notification.replaceAll(placeHolder.getOldValue(), placeHolder.getReplacement());
         }
 
-        return notification;
+        return BColor.color(notification);
     }
 
     /**
@@ -54,15 +58,15 @@ public enum CrateNotification implements BNotification {
      */
     @Override
     public @Nonnull List<String> getNotifications(@Nonnull BPlaceHolder... placeholders) {
-        List<String> notifications = BCrateCore.getLangSetting().getConfigurationSection(name()).stream().toList();
+        List<String> notifications = BCrateCore.getLangSetting().getStringList(name()).stream().toList();
 
-        for (String notification : notifications) {
+        return notifications.stream().map(notification -> {
             for (BPlaceHolder placeHolder : placeholders) {
                 notification = notification.replaceAll(placeHolder.getOldValue(), placeHolder.getReplacement());
             }
-        }
 
-        return notifications;
+            return BColor.color(notification);
+        }).toList();
     }
 
 }

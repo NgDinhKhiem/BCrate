@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
+import java.util.stream.IntStream;
 
 /**
  * Class representing the crate show menu
@@ -48,8 +49,7 @@ public class CrateShowMenu extends BMenu {
     public void openInventory(@NotNull Player player) {
         BValidate.notNull(player);
 
-        getInventory().clear();
-
+        IntStream.range(0, getInventory().getSize()).forEach(i -> getInventory().setItem(i, crate.get().color().get().getBackground()));
         crate.get().prizes().get().forEach(prize -> setItem(prize.slot().get(), prize.getBackground(crate.get())));
 
         player.openInventory(getInventory());

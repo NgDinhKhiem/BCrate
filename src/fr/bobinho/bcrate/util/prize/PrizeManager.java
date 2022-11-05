@@ -58,6 +58,29 @@ public class PrizeManager {
     }
 
     /**
+     * Changes the chance
+     *
+     * @param prize  the prize
+     * @param chance the chance
+     */
+    public static void changeChance(@Nonnull Prize prize, double chance) {
+        BValidate.notNull(prize);
+
+        prize.chance().set(chance);
+    }
+
+    /**
+     * Changes the rarity
+     *
+     * @param prize  the prize
+     */
+    public static void changeRarity(@Nonnull Prize prize) {
+        BValidate.notNull(prize);
+
+        prize.rarity().set(!prize.rarity().get());
+    }
+
+    /**
      * Opens the prize edit menu
      *
      * @param player the player

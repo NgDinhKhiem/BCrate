@@ -158,11 +158,10 @@ public class BArmoredEntity<T extends BArmoredEntity<T>> extends BEntity<BArmore
     public final void onShow(@Nonnull List<Player> players) {
         BValidate.notNull(players);
 
-        players.forEach(p -> p.sendMessage("show"));
         //Equipment packets
         Arrays.stream(Equipment.values()).forEach(equipment ->
                 this.getEquipment(equipment).ifPresent(equipmentItem -> {
-                    players.forEach(p -> p.sendMessage("show : " + equipmentItem));
+
                     //Sends equipment packet
                     BPacket.send(new PacketPlayOutEntityEquipment(getId(), equipment.toPacketObject(equipmentItem)), players);
                 })

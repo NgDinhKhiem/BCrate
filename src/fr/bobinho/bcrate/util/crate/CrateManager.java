@@ -1,7 +1,9 @@
 package fr.bobinho.bcrate.util.crate;
 
 import fr.bobinho.bcrate.BCrateCore;
-import fr.bobinho.bcrate.api.entity.base.BArmorStand;
+import fr.bobinho.bcrate.api.entity.BEntity;
+import fr.bobinho.bcrate.api.entity.base.BArmorStandEntity;
+import fr.bobinho.bcrate.api.entity.type.BArmoredEntity;
 import fr.bobinho.bcrate.api.item.BItemBuilder;
 import fr.bobinho.bcrate.api.location.BLocation;
 import fr.bobinho.bcrate.api.setting.BSetting;
@@ -18,7 +20,6 @@ import fr.bobinho.bcrate.util.tag.Tag;
 import fr.bobinho.bcrate.util.tag.TagManager;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -126,7 +127,7 @@ public class CrateManager {
         BValidate.notNull(name);
 
         get(name).ifPresent(crate -> {
-            crate.structure().stream().forEach(BArmorStand::remove);
+            crate.structure().stream().forEach(BEntity::remove);
             crates.remove(crate.name().get());
             crate.animation().stop();
         });
@@ -223,7 +224,7 @@ public class CrateManager {
      * @param location the location
      * @return the structure
      */
-    private static @Nonnull List<BArmorStand> createStructure(@Nonnull Location location) {
+    private static @Nonnull List<BArmorStandEntity> createStructure(@Nonnull Location location) {
         BValidate.notNull(location);
 
         Point2D.Double[] move = {
@@ -242,22 +243,28 @@ public class CrateManager {
                 new Point2D.Double(1.015D, -0.02D),
                 new Point2D.Double(1.06D, -0.12D)
         };
-        return IntStream.range(0, 30).mapToObj(i -> {
-                        float angle = (float) Math.toRadians(((i - 2) * 10) % 140);
-                        double moveX = move[(Math.max(0, i - 2) % 14)].getX();
-                        double moveY = move[(Math.max(0, i - 2) % 14)].getY();
 
-                        return new BArmorStand(location.clone().add(0, i < 2 ? 0 : moveX, i < 2 ? 0 : (i < 16 ? moveY : -moveY)))
-                                .setHeadPose(i < 2 ? 0 : (i < 16 ? -angle : angle), 0, 0)
-                                .setEquipment(new BItemBuilder((i == 0 ? Material.DIAMOND_SHOVEL : Material.AIR)).durability(26).build());
+        return IntStream.range(0, 32).mapToObj(i -> {
+            float angle = (float) ((i - 4) * 10 % 140);
+            int moveIndex = (Math.max(0, i - 4) % 14);
+            double moveX = move[moveIndex].getX();
+            double moveY = move[moveIndex].getY();
+
+            return new BArmorStandEntity(location.clone().add(0, i < 4 ? 0 : moveX, i < 4 ? 0 : (i < 18 ? moveY : -moveY)))
+                    .setEquipment(BArmoredEntity.Equipment.HELMET, new BItemBuilder((i == 0 ? Material.DIAMOND_SHOVEL : Material.AIR)).durability(26).build())
+                    .setHeadPose(i < 4 ? 0 : (i < 18 ? -angle : angle), 0, 0);
         }).toList();
     }
 
-    public static Optional<Crate> isFromStructure(@Nonnull Entity entity) {
-        BValidate.notNull(entity);
+    /**
+     * Checks if the entity is from a structure
+     *
+     * @return true if the entity is from a structure, false otherwise
+     */
+    public static Optional<Crate> isFromStructure(int id) {
 
         return crates.values().stream()
-                .filter(crate -> crate.structure().stream().anyMatch(armorStand -> armorStand.getId() == entity.getEntityId()))
+                .filter(crate -> crate.structure().stream().anyMatch(armorStand -> armorStand.getId() == id))
                 .findFirst();
     }
 
@@ -297,6 +304,12 @@ public class CrateManager {
         get(name).ifPresent(crate -> crate.showMenu().get().openInventory(player));
     }
 
+    /**
+     * Checks if the crate can be played
+     *
+     * @param name the name
+     * @return true if the crate can be played, false otherwise
+     */
     public static boolean canPlay(@Nonnull String name) {
         BValidate.notNull(name);
 
@@ -309,7 +322,7 @@ public class CrateManager {
      * @param name the name
      * @return the rewards
      */
-    public static @Nonnull List<ItemStack> play(@Nonnull String name) {
+    public static @Nonnull List<Prize> play(@Nonnull String name) {
         BValidate.notNull(name);
 
         Random random = new Random();
@@ -328,15 +341,26 @@ public class CrateManager {
                     return sum >= picked;
                 }
 
-            }).map(prize -> prize.item().get()).findFirst().orElse(new BItemBuilder(Material.AIR).build());
+            }).findFirst().orElse(crate.prizes().get(random.nextInt(crate.prizes().size())));
 
-        }).filter(prize -> prize.getType() != Material.AIR).toList()).orElse(Collections.emptyList());
+        }).toList()).orElse(Collections.emptyList());
+    }
+
+    /**
+     * Reloads all crates
+     */
+    public static void reload() {
+        crates.clear();
+        configuration.initialize();
+
+        load();
     }
 
     /**
      * Loads all crates
      */
     public static void load() {
+        crates.clear();
 
         //Loads all crates
         configuration.getKeys().forEach(crate -> {
@@ -347,10 +371,11 @@ public class CrateManager {
             List<Prize> prizes = configuration.getConfigurationSection(crate + ".prizes").stream().map(slot -> {
                 ItemStack item = configuration.getItemStack(crate + ".prizes." + slot + ".item");
                 double chance = configuration.getDouble(crate + ".prizes." + slot + ".chance");
+                boolean rare = configuration.getBoolean(crate + ".prizes." + slot + ".rarity");
                 List<Tag> tags = configuration.getStringList(crate + ".prizes." + slot + ".tags").stream().map(tag ->
                         TagManager.get(tag).orElseThrow(IllegalPathStateException::new)).collect(Collectors.toList());
 
-                return new Prize(item, Integer.parseInt(slot), chance, tags);
+                return new Prize(item, Integer.parseInt(slot), chance, rare, tags);
             }).collect(Collectors.toList());
 
             crates.put(crate, new Crate(crate, size, prizes, location, color, key, createStructure(location)));
@@ -365,7 +390,7 @@ public class CrateManager {
 
         //Saves all crates
         crates.values().forEach(crate -> {
-            crate.structure().stream().forEach(BArmorStand::remove);
+            crate.structure().stream().forEach(BArmorStandEntity::remove);
             configuration.set(crate.name().get() + ".size", crate.size().get().name());
             configuration.set(crate.name().get() + ".location", BLocation.getAsString(crate.location().get()));
             configuration.set(crate.name().get() + ".color", crate.color().get().name());
@@ -374,6 +399,7 @@ public class CrateManager {
             crate.prizes().get().forEach(prize -> {
                 configuration.set(crate.name().get() + ".prizes." + prize.slot().get() + ".item", prize.item().get());
                 configuration.set(crate.name().get() + ".prizes." + prize.slot().get() + ".chance", prize.chance().get());
+                configuration.set(crate.name().get() + ".prizes." + prize.slot().get() + ".rarity", prize.rarity().get());
                 configuration.set(crate.name().get() + ".prizes." + prize.slot().get() + ".tags", prize.tags().get().stream().map(tag -> tag.name().get()).toList());
             });
         });

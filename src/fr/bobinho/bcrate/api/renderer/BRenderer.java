@@ -1,6 +1,5 @@
 package fr.bobinho.bcrate.api.renderer;
 
-import fr.bobinho.bcrate.BCrateCore;
 import fr.bobinho.bcrate.api.location.BLocation;
 import fr.bobinho.bcrate.api.validate.BValidate;
 import org.bukkit.Bukkit;
@@ -87,6 +86,17 @@ public final class BRenderer {
      */
     public @Nonnull List<UUID> getShownViewers() {
         return shownViewers;
+    }
+
+    /**
+     * Removes player from shown viewers
+     *
+     * @param uuid the uuid
+     */
+    public void removeShownViewers(@Nonnull UUID uuid) {
+        BValidate.notNull(uuid);
+
+        shownViewers.remove(uuid);
     }
 
     /**
@@ -350,10 +360,11 @@ public final class BRenderer {
 
         //Checks shown viewers
         if (!shownViewers.isEmpty()) {
+
             Collection<UUID> notAbleToSeeViewers = shownViewers.stream()
                     .filter(uuid -> {
                         Player player = Bukkit.getPlayer(uuid);
-                        return player == null || !this.canSee(player.getLocation());
+                        return player == null || !canSee(player.getLocation());
                     }).toList();
 
             //If viewers are empty, no need to continue
@@ -384,6 +395,7 @@ public final class BRenderer {
 
             //If all viewers are offline, call empty consumer.
             if (getViewersAsPlayer().isEmpty()) {
+
                 if (emptyConsumer != null) {
                     emptyConsumer.accept(this);
                 }

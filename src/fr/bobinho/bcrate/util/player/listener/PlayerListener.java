@@ -1,6 +1,7 @@
 package fr.bobinho.bcrate.util.player.listener;
 
 import fr.bobinho.bcrate.api.event.BEvent;
+import fr.bobinho.bcrate.util.crate.CrateManager;
 import fr.bobinho.bcrate.util.player.PlayerManager;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -36,6 +37,8 @@ public class PlayerListener {
                 .consume(event -> {
                     PlayerManager.save();
                     PlayerManager.delete(event.getPlayer().getUniqueId());
+                    CrateManager.stream().forEach(crate -> crate.structure().stream()
+                                    .forEach(structure -> structure.getRenderer().removeShownViewers(event.getPlayer().getUniqueId())));
                 });
     }
 

@@ -3,6 +3,7 @@ main: fr.bobinho.bcrate.BCrateCore
 version: 0.0.1
 author: Bobinho
 api-version: 1.17
+depend: [ProtocolLib]
 commands:
   cmd:
     description: commands.
