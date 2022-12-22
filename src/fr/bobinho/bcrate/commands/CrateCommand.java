@@ -2,6 +2,7 @@ package fr.bobinho.bcrate.commands;
 
 import co.aikar.commands.annotation.*;
 import fr.bobinho.bcrate.api.command.BCommand;
+import fr.bobinho.bcrate.api.item.BItemBuilder;
 import fr.bobinho.bcrate.api.location.BLocation;
 import fr.bobinho.bcrate.api.notification.BPlaceHolder;
 import fr.bobinho.bcrate.util.crate.CrateManager;
@@ -11,8 +12,10 @@ import fr.bobinho.bcrate.util.crate.notification.CrateNotification;
 import fr.bobinho.bcrate.util.key.Key;
 import fr.bobinho.bcrate.util.key.KeyManager;
 import fr.bobinho.bcrate.util.tag.TagManager;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -57,7 +60,12 @@ public final class CrateCommand extends BCommand {
         }
 
         //Creates the crate
-        CrateManager.create(name, Size.SIZE_5, BLocation.getPosition(sender.getLocation()).add(0, -1, 0), Color.BLACK, key.get());
+        CrateManager.create(sender, name, Size.SIZE_5, BLocation.getPosition(sender.getLocation()).add(0, -1, 0), Color.BLACK, key.get(), List.of(
+                new BItemBuilder(Material.DIAMOND_SHOVEL).durability(26).build(),
+                new BItemBuilder(Material.DIAMOND_SHOVEL).durability(29).build(),
+                new BItemBuilder(Material.DIAMOND_SHOVEL).durability(27).build(),
+                new BItemBuilder(Material.DIAMOND_SHOVEL).durability(28).build())
+        );
 
         //Messages
         sender.sendMessage(CrateNotification.CRATE_CREATED.getNotification(new BPlaceHolder("%name%", name)));

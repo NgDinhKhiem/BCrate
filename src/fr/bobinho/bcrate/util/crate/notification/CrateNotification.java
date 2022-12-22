@@ -14,6 +14,7 @@ import java.util.List;
 public enum CrateNotification implements BNotification {
     CRATE_EDIT_MENU_NAME,
     CRATE_EDIT_MENU_PRIZES,
+    CRATE_EDIT_MENU_STRUCTURE,
     CRATE_PRIZE_MENU_NAME,
     CRATE_SHOW_MENU_NAME,
     CRATE_ALREADY_REGISTERED,
@@ -28,6 +29,11 @@ public enum CrateNotification implements BNotification {
     CRATE_LAUNCH,
     CRATE_RELOADED,
     CRATE_PRIZE_INFO_GLOBAL,
+    CRATE_STRUCTURE_MENU_NAME,
+    CRATE_SKIN_CLOSE,
+    CRATE_SKIN_OPEN,
+    CRATE_SKIN_LEFT,
+    CRATE_SKIN_RIGHT,
     UTIL_NOT_A_NUMBER,
     UTIL_NOT_ONLINE;
 

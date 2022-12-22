@@ -23,7 +23,7 @@ public class MultiValuedAttribute<T> {
      * @param values the initial values
      */
     public MultiValuedAttribute(@Nonnull List<T> values) {
-        this.values = values;
+        this.values = new ArrayList<>(values);
     }
 
     /**
@@ -73,6 +73,18 @@ public class MultiValuedAttribute<T> {
     }
 
     /**
+     * Sets the index value of the multi-valued attribute to value
+     *
+     * @param index the index
+     * @param value the value
+     */
+    public void set(int index, @Nonnull T value) {
+        BValidate.notNull(value);
+
+        values.set(index, value);
+    }
+
+    /**
      * Removes a value from the multi-valued attribute
      *
      * @param value the value
@@ -103,6 +115,9 @@ public class MultiValuedAttribute<T> {
         values.remove(index);
     }
 
+    /**
+     * Clears the multi-valued attribute
+     */
     public void clear() {
         values.clear();
     }

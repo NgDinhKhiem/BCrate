@@ -39,7 +39,7 @@ public final class KeyCommand extends BCommand {
     @CommandPermission("keys")
     @Description("Opens the keys menu.")
     public void onCommandKeys(Player sender) {
-        KeyManager.openShowMenu(sender);
+        KeyManager.openShowMenu(sender, sender);
     }
 
     /**
@@ -107,11 +107,11 @@ public final class KeyCommand extends BCommand {
     /**
      * Command keys give
      */
-    @Syntax("/keys give <name> <receiver> <amount>")
+    @Syntax("/keys give <receiver> <amount> <name>")
     @Subcommand("give")
     @CommandPermission("keys.give")
     @Description("Gives a key.")
-    public void onCommandKeysGive(Player sender, String name, String receiver, int amount) {
+    public void onCommandKeysGive(Player sender, String receiver, int amount, String name) {
 
         Optional<Player> player = Optional.ofNullable(Bukkit.getPlayer(receiver));
 
@@ -134,20 +134,21 @@ public final class KeyCommand extends BCommand {
         }
 
         //Gives the key
-        KeyManager.give(sender, name, amount);
+        KeyManager.give(player.get(), name, amount);
 
         //Messages
-        sender.sendMessage(PlayerNotification.PLAYER_GIVE_KEY.getNotification(new BPlaceHolder("%name%", name), new BPlaceHolder("%amount%", String.valueOf(amount))));
+        player.get().sendMessage(PlayerNotification.PLAYER_RECEIVE_KEY.getNotification(new BPlaceHolder("%name%", name), new BPlaceHolder("%amount%", String.valueOf(amount))));
+        sender.sendMessage(PlayerNotification.PLAYER_GIVE_KEY.getNotification(new BPlaceHolder("%name%", name), new BPlaceHolder("%amount%", String.valueOf(amount)), new BPlaceHolder("%player%", player.get().getName())));
     }
 
     /**
      * Command keys deposit
      */
-    @Syntax("/keys deposit <name> <receiver> <amount>")
+    @Syntax("/keys deposit <receiver> <amount> <name>")
     @Subcommand("deposit")
     @CommandPermission("keys.deposit")
     @Description("Deposits a key.")
-    public void onCommandKeysDeposit(Player sender, String name, String receiver, int amount) {
+    public void onCommandKeysDeposit(Player sender, String receiver, int amount, String name) {
 
         Optional<Player> player = Optional.ofNullable(Bukkit.getPlayer(receiver));
 
@@ -172,11 +173,73 @@ public final class KeyCommand extends BCommand {
         KeyManager.get(name).ifPresent(key -> {
 
             //Gives the key
-            PlayerManager.depositKey(player.get().getUniqueId(), key, amount);
+            PlayerManager.addKey(player.get().getUniqueId(), key, amount);
         });
 
         //Messages
-        sender.sendMessage(PlayerNotification.PLAYER_GIVE_KEY.getNotification(new BPlaceHolder("%name%", name), new BPlaceHolder("%amount%", String.valueOf(amount))));
+        player.get().sendMessage(PlayerNotification.PLAYER_RECEIVE_KEY.getNotification(new BPlaceHolder("%name%", name), new BPlaceHolder("%amount%", String.valueOf(amount))));
+        sender.sendMessage(PlayerNotification.PLAYER_GIVE_KEY.getNotification(new BPlaceHolder("%name%", name), new BPlaceHolder("%amount%", String.valueOf(amount)), new BPlaceHolder("%player%", player.get().getName())));
+    }
+
+    /**
+     * Command keys withdraw
+     */
+    @Syntax("/keys withdraw <receiver> <amount> <name>")
+    @Subcommand("withdraw")
+    @CommandPermission("keys.withdraw")
+    @Description("Withdraws a key.")
+    public void onCommandKeysWithdraw(Player sender, String receiver, int amount, String name) {
+
+        Optional<Player> player = Optional.ofNullable(Bukkit.getPlayer(receiver));
+
+        //Checks if the player is online
+        if (player.isEmpty()) {
+            sender.sendMessage(CrateNotification.UTIL_NOT_ONLINE.getNotification(new BPlaceHolder("%name%", receiver)));
+            return;
+        }
+
+        //Checks if the receiver is registered
+        if (!PlayerManager.isRegistered(player.get().getUniqueId())) {
+            sender.sendMessage(PlayerNotification.PLAYER_NOT_REGISTERED.getNotification(new BPlaceHolder("%name%", receiver)));
+            return;
+        }
+
+        //Checks if the key is not registered
+        if (!KeyManager.isRegistered(name)) {
+            sender.sendMessage(KeyNotification.KEY_NOT_REGISTERED.getNotification(new BPlaceHolder("%name%", name)));
+            return;
+        }
+
+        KeyManager.get(name).ifPresent(key -> {
+
+            //Gives the key
+            PlayerManager.removeKey(player.get().getUniqueId(), key, amount);
+        });
+
+        //Messages
+        player.get().sendMessage(PlayerNotification.PLAYER_LOOSE_KEY.getNotification(new BPlaceHolder("%name%", name), new BPlaceHolder("%amount%", String.valueOf(amount))));
+        sender.sendMessage(PlayerNotification.PLAYER_REMOVE_KEY.getNotification(new BPlaceHolder("%name%", name), new BPlaceHolder("%amount%", String.valueOf(amount)), new BPlaceHolder("%player%", player.get().getName())));
+    }
+
+    /**
+     * Command keys info
+     */
+    @Syntax("/keys info <receiver>")
+    @Subcommand("info")
+    @CommandPermission("keys.info")
+    @Description("Gets key informations about player.")
+    public void onCommandKeysInfo(Player sender, String receiver) {
+
+        Optional<Player> player = Optional.ofNullable(Bukkit.getPlayer(receiver));
+
+        //Checks if the player is online
+        if (player.isEmpty()) {
+            sender.sendMessage(CrateNotification.UTIL_NOT_ONLINE.getNotification(new BPlaceHolder("%name%", receiver)));
+            return;
+        }
+
+        //Opens menu
+        KeyManager.openShowMenu(sender, player.get());
     }
 
     /**

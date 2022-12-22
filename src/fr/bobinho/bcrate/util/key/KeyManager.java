@@ -30,7 +30,6 @@ public class KeyManager {
     private static final HashMap<String, Key> keys = new HashMap<>();
     private static final BSetting configuration = BCrateCore.getKeySetting();
     private static final KeyEditMenu editMenu = new KeyEditMenu();
-    private static final KeyShowMenu showMenu = new KeyShowMenu();
 
 
     /**
@@ -192,11 +191,13 @@ public class KeyManager {
      * Opens the key show menu
      *
      * @param player the player
+     * @param owner the owner
      */
-    public static void openShowMenu(@Nonnull Player player) {
+    public static void openShowMenu(@Nonnull Player player, @Nonnull Player owner) {
         BValidate.notNull(player);
+        BValidate.notNull(owner);
 
-        showMenu.openInventory(player);
+        new KeyShowMenu(owner).openInventory(player);
     }
 
     /**

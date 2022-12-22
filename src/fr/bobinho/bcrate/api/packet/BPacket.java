@@ -1,129 +1,24 @@
 package fr.bobinho.bcrate.api.packet;
 
 import fr.bobinho.bcrate.BCrateCore;
-import fr.bobinho.bcrate.api.event.BEvent;
 import fr.bobinho.bcrate.api.validate.BValidate;
 import net.minecraft.network.protocol.Packet;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.v1_17_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 
 /**
  * Bobinho packet library
  */
 public final class BPacket {
-
-    /**
-     * Fields
-     */
-    private static final LinkedHashMap<UUID, BPacketHandler> packetHandlers = new LinkedHashMap<>();
-
-    /**
-     * Main construction
-     */
-    static {
-        //Register join listener
-        BEvent.registerEvent(PlayerJoinEvent.class).consume(event -> createHandler(event.getPlayer()));
-
-        //Register quit listener
-        BEvent.registerEvent(PlayerQuitEvent.class).consume(event -> removeHandler(event.getPlayer()));
-    }
-
-    /**
-     * Gets the packet handler by player
-     *
-     * @param player the player
-     * @return the packet handler
-     */
-    public static @Nonnull Optional<BPacketHandler> getHandler(@Nonnull Player player) {
-        BValidate.notNull(player);
-
-        return Optional.ofNullable(packetHandlers.get(player));
-    }
-
-    /**
-     * Gets the packet handler by player
-     *
-     * @param uuid the uuid
-     * @return the packet handler
-     */
-    public static @Nonnull Optional<BPacketHandler> getHandler(@Nonnull UUID uuid) {
-        BValidate.notNull(uuid);
-
-        return Optional.ofNullable(packetHandlers.get(uuid));
-    }
-
-
-    /**
-     * Adds the packet handler to the list
-     *
-     * @param handler the packet handler
-     */
-    public static void addHandler(@Nonnull BPacketHandler handler) {
-        BValidate.notNull(handler);
-
-        getHandler(handler.getId()).ifPresent(BPacketHandler::delete);
-        packetHandlers.put(handler.getId(), handler);
-    }
-
-    /**
-     * Removes the packet handler from the list
-     *
-     * @param handler the packet handler
-     */
-    public static void removeHandler(@Nonnull BPacketHandler handler) {
-        BValidate.notNull(handler);
-
-        getHandler(handler.getId()).ifPresent(BPacketHandler::delete);
-    }
-
-    /**
-     * Removes the packet handler from the list
-     *
-     * @param player the player
-     */
-    public static void removeHandler(@Nonnull Player player) {
-        BValidate.notNull(player);
-
-        getHandler(player.getUniqueId()).ifPresent(BPacketHandler::delete);
-    }
-
-    /**
-     * Removes the packet handler from the list
-     *
-     * @param uuid the player
-     */
-    public static void removeHandler(@Nonnull UUID uuid) {
-        BValidate.notNull(uuid);
-
-        getHandler(uuid).ifPresent(BPacketHandler::delete);
-    }
-
-    /**
-     * Created the packet handler for player
-     *
-     * @param player the player
-     * @return the packet handler
-     */
-    public static BPacketHandler createHandler(@Nonnull Player player) {
-        BValidate.notNull(player);
-
-        //Created new the packet handler
-        BPacketHandler packetHandler = new BPacketHandler(player);
-
-        //Adds new created the packet handler to the list
-        addHandler(packetHandler);
-
-        //Return new created the packet handler
-        return packetHandler;
-    }
 
     /**
      * Sends the packet to the players
@@ -198,8 +93,7 @@ public final class BPacket {
      * @param name     the name
      * @return Value.
      */
-    @Nonnull
-    public static Object getValue(@Nonnull Object instance, @Nonnull String name) {
+    public static @Nonnull Object getValue(@Nonnull Object instance, @Nonnull String name) {
         BValidate.notNull(instance);
         BValidate.notNull(name);
 

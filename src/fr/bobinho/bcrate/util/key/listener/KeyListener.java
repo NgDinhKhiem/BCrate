@@ -51,6 +51,7 @@ public class KeyListener {
 
         BEvent.registerEvent(InventoryClickEvent.class)
                 .filter(event -> event.getInventory().getHolder() instanceof KeyEditMenu)
+                .filter(event -> event.getClickedInventory() != null)
                 .filter(event -> (event.getClick() != ClickType.RIGHT && event.getClick() != ClickType.LEFT) || event.getClickedInventory().getType() == InventoryType.PLAYER)
                 .consume(event -> event.setCancelled(true));
     }
@@ -92,7 +93,7 @@ public class KeyListener {
                     }
 
                     KeyManager.get(event.getCurrentItem()).ifPresent(key -> {
-                        askKeyNumberToWithdrawn((Player) event.getWhoClicked(), key);
+                        askKeyNumberToWithdrawn((Player) event.getWhoClicked(), ((KeyShowMenu) event.getInventory().getHolder()).owner().get(), key);
                     });
                 });
     }
@@ -113,7 +114,7 @@ public class KeyListener {
                     }
 
                     KeyManager.get(event.getCurrentItem()).ifPresent(key -> {
-                        askKeyNumberToDeposited((Player) event.getWhoClicked(), key);
+                        askKeyNumberToDeposited((Player) event.getWhoClicked(), ((KeyShowMenu) event.getInventory().getHolder()).owner().get(), key);
                     });
                 });
     }
@@ -124,8 +125,9 @@ public class KeyListener {
      * @param player the player
      * @param key    the key
      */
-    private static void askKeyNumberToWithdrawn(@Nonnull Player player, @Nonnull Key key) {
+    private static void askKeyNumberToWithdrawn(@Nonnull Player player, @Nonnull Player owner, @Nonnull Key key) {
         BValidate.notNull(player);
+        BValidate.notNull(owner);
         BValidate.notNull(key);
 
         player.closeInventory();
@@ -139,7 +141,7 @@ public class KeyListener {
 
                     //Checks if the player is not registered
                     if (!PlayerManager.isRegistered(player.getUniqueId())) {
-                        player.sendMessage(PlayerNotification.PLAYER_NOT_REGISTERED.getNotification(new BPlaceHolder("%name%", player.getName())));
+                        player.sendMessage(PlayerNotification.PLAYER_NOT_REGISTERED.getNotification(new BPlaceHolder("%name%", owner.getName())));
                         return;
                     }
 
@@ -150,24 +152,41 @@ public class KeyListener {
                     }
 
                     //Checks if the player has enough keys
-                    if (Integer.parseInt(event.getMessage()) > PlayerManager.getKeyNumberWithdrawable(player.getUniqueId(), key)) {
-                        player.sendMessage(KeyNotification.KEY_PLAYER_NOT_ENOUGH_TO_WITHDRAW.getNotification(
-                                new BPlaceHolder("%amount%", String.valueOf(Integer.parseInt(event.getMessage()))),
-                                new BPlaceHolder("%name%", key.name().get())));
+                    if (Integer.parseInt(event.getMessage()) > PlayerManager.getKeyNumberWithdrawable(owner.getUniqueId(), key)) {
+                        if (player.equals(owner)) {
+                            player.sendMessage(KeyNotification.KEY_YOU_NOT_ENOUGH_TO_WITHDRAW.getNotification(
+                                    new BPlaceHolder("%amount%", String.valueOf(Integer.parseInt(event.getMessage()))),
+                                    new BPlaceHolder("%name%", key.name().get())));
+                        } else {
+                            player.sendMessage(KeyNotification.KEY_PLAYER_NOT_ENOUGH_TO_WITHDRAW.getNotification(
+                                    new BPlaceHolder("%amount%", String.valueOf(Integer.parseInt(event.getMessage()))),
+                                    new BPlaceHolder("%player%", owner.getName()),
+                                    new BPlaceHolder("%name%", key.name().get())));
+                        }
                         return;
                     }
 
                     //Checks if the player has enough keys
-                    if (!PlayerManager.canWithdrawKey(player.getUniqueId(), key, Integer.parseInt(event.getMessage()))) {
-                        player.sendMessage(PlayerNotification.PLAYER_INVENTORY_FULL.getNotification());
+                    if (!PlayerManager.canWithdrawKey(owner.getUniqueId(), key, Integer.parseInt(event.getMessage()))) {
+                        if (player.equals(owner)) {
+                            player.sendMessage(PlayerNotification.PLAYER_YOU_INVENTORY_FULL.getNotification());
+                        } else {
+                            player.sendMessage(PlayerNotification.PLAYER_INVENTORY_FULL.getNotification(new BPlaceHolder("%player", owner.getName())));
+                        }
                         return;
                     }
 
-                    PlayerManager.withdrawKey(player.getUniqueId(), key, Integer.parseInt(event.getMessage()));
+                    if (player.equals(owner)) {
+                        PlayerManager.withdrawKey(owner.getUniqueId(), key, Integer.parseInt(event.getMessage()));
 
-                    player.sendMessage(KeyNotification.KEY_WITHDRAW.getNotification(
-                            new BPlaceHolder("%amount%", String.valueOf(Integer.parseInt(event.getMessage()))),
-                            new BPlaceHolder("%name%", key.name().get())));
+                        player.sendMessage(KeyNotification.KEY_WITHDRAW.getNotification(
+                                new BPlaceHolder("%amount%", String.valueOf(Integer.parseInt(event.getMessage()))),
+                                new BPlaceHolder("%name%", key.name().get())));
+                    } else {
+                        PlayerManager.removeKey(owner.getUniqueId(), key, Integer.parseInt(event.getMessage()));
+                        owner.sendMessage(PlayerNotification.PLAYER_LOOSE_KEY.getNotification(new BPlaceHolder("%name%", key.name().get()), new BPlaceHolder("%amount%", (event.getMessage()))));
+                        player.sendMessage(PlayerNotification.PLAYER_REMOVE_KEY.getNotification(new BPlaceHolder("%name%", key.name().get()), new BPlaceHolder("%amount%", event.getMessage()), new BPlaceHolder("%player%", owner.getName())));
+                    }
                 });
     }
 
@@ -177,8 +196,9 @@ public class KeyListener {
      * @param player the player
      * @param key    the key
      */
-    private static void askKeyNumberToDeposited(@Nonnull Player player, @Nonnull Key key) {
+    private static void askKeyNumberToDeposited(@Nonnull Player player, @Nonnull Player owner, @Nonnull Key key) {
         BValidate.notNull(player);
+        BValidate.notNull(owner);
         BValidate.notNull(key);
 
         player.closeInventory();
@@ -191,8 +211,8 @@ public class KeyListener {
                     event.setCancelled(true);
 
                     //Checks if the player is not registered
-                    if (!PlayerManager.isRegistered(player.getUniqueId())) {
-                        player.sendMessage(PlayerNotification.PLAYER_NOT_REGISTERED.getNotification(new BPlaceHolder("%name%", player.getName())));
+                    if (!PlayerManager.isRegistered(owner.getUniqueId())) {
+                        player.sendMessage(PlayerNotification.PLAYER_NOT_REGISTERED.getNotification(new BPlaceHolder("%name%", owner.getName())));
                         return;
                     }
 
@@ -203,18 +223,26 @@ public class KeyListener {
                     }
 
                     //Checks if the player has enough keys
-                    if (Integer.parseInt(event.getMessage()) > PlayerManager.getKeyNumberDepositable(player.getUniqueId(), key)) {
-                        player.sendMessage(KeyNotification.KEY_PLAYER_NOT_ENOUGH_TO_DEPOSIT.getNotification(
-                                new BPlaceHolder("%amount%", String.valueOf(Integer.parseInt(event.getMessage()))),
-                                new BPlaceHolder("%name%", key.name().get())));
+                    if (Integer.parseInt(event.getMessage()) > PlayerManager.getKeyNumberDepositable(owner.getUniqueId(), key) && player.equals(owner)) {
+                        if (player.equals(owner)) {
+                            player.sendMessage(KeyNotification.KEY_YOU_NOT_ENOUGH_TO_DEPOSIT.getNotification(
+                                    new BPlaceHolder("%amount%", String.valueOf(Integer.parseInt(event.getMessage()))),
+                                    new BPlaceHolder("%name%", key.name().get())));
+                        }
                         return;
                     }
 
-                    PlayerManager.depositKey(player.getUniqueId(), key, Integer.parseInt(event.getMessage()));
+                    if (player.equals(owner)) {
+                        PlayerManager.depositKey(owner.getUniqueId(), key, Integer.parseInt(event.getMessage()));
 
-                    player.sendMessage(KeyNotification.KEY_DEPOSIT.getNotification(
-                            new BPlaceHolder("%amount%", String.valueOf(Integer.parseInt(event.getMessage()))),
-                            new BPlaceHolder("%name%", key.name().get())));
+                        player.sendMessage(KeyNotification.KEY_DEPOSIT.getNotification(
+                                new BPlaceHolder("%amount%", String.valueOf(Integer.parseInt(event.getMessage()))),
+                                new BPlaceHolder("%name%", key.name().get())));
+                    } else {
+                        PlayerManager.addKey(owner.getUniqueId(), key, Integer.parseInt(event.getMessage()));
+                        owner.sendMessage(PlayerNotification.PLAYER_RECEIVE_KEY.getNotification(new BPlaceHolder("%name%", key.name().get()), new BPlaceHolder("%amount%", (event.getMessage()))));
+                        player.sendMessage(PlayerNotification.PLAYER_GIVE_KEY.getNotification(new BPlaceHolder("%name%", key.name().get()), new BPlaceHolder("%amount%", event.getMessage()), new BPlaceHolder("%player%", owner.getName())));
+                    }
                 });
     }
 

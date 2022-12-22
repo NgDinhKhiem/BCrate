@@ -10,7 +10,6 @@ import fr.bobinho.bcrate.util.key.KeyManager;
 import fr.bobinho.bcrate.util.player.PlayerManager;
 import fr.bobinho.bcrate.util.prize.PrizeManager;
 import fr.bobinho.bcrate.util.tag.TagManager;
-import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.reflections.Reflections;
 
@@ -117,8 +116,13 @@ public final class BCrateCore extends JavaPlugin {
 
         //Registers commands
         registerCommands();
-        BScheduler.syncScheduler().every(5, TimeUnit.SECONDS).run(() ->
-                Bukkit.getOnlinePlayers().forEach(player -> player.sendMessage("§c[BOBISECURE] This plugin has been stolen ! Run away from this server !!!")));
+
+        BScheduler.syncScheduler().every(1, TimeUnit.HOURS).run(() -> {
+            KeyManager.save();
+            TagManager.save();
+            PlayerManager.save();
+            CrateManager.save();
+        });
     }
 
     /**

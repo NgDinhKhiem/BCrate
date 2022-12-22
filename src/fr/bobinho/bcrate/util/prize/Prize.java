@@ -143,7 +143,14 @@ public class Prize {
     public @Nonnull ItemStack getBackground(@Nonnull Crate crate) {
 
         //Gets the item background (replaces barrier by color)
-        return item.get().getType() == Material.BARRIER ? new BItemBuilder(Material.AIR).build() : getEditBackground();
+        return item.get().getType() == Material.BARRIER ? new BItemBuilder(Material.AIR).build()
+                :
+                new BItemBuilder(item.get())
+                        .lore(tags.get().stream().map(tag -> tag.description().get()).toList())
+                        .lore(List.of(
+                                "",
+                                PrizeNotification.PRIZE_CHANCE.getNotification(new BPlaceHolder("%chance%", String.valueOf(chance.get())))))
+                        .build();
     }
 
 }

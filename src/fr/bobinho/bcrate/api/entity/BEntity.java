@@ -232,11 +232,13 @@ public class BEntity<T extends BEntity<T>> {
     /**
      * Triggers the render every tick
      */
-    public final void render() {
+    public final T render() {
         renderer.render();
 
         //Overridable method
         onTick();
+
+        return (T) this;
     }
 
     /**

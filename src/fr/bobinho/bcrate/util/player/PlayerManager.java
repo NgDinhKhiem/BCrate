@@ -16,6 +16,7 @@ import org.bukkit.inventory.ItemStack;
 import javax.annotation.Nonnull;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
@@ -212,8 +213,7 @@ public class PlayerManager {
         BValidate.notNull(key);
 
         //Withdraws key
-        Optional.ofNullable(Bukkit.getPlayer(uuid)).ifPresent(player ->
-                player.getInventory().addItem(new BItemBuilder(key.item().get()).amount(amount).build()));
+        Optional.ofNullable(Bukkit.getPlayer(uuid)).ifPresent(player -> IntStream.range(0, amount).forEach(i -> player.getInventory().addItem(key.item().get().clone())));
         removeKey(uuid, key, amount);
     }
 

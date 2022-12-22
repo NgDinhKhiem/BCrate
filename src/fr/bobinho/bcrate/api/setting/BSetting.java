@@ -11,9 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Bobinho setting library
@@ -192,6 +190,18 @@ public final class BSetting {
     }
 
     /**
+     * Gets the requested ItemStack list by path
+     *
+     * @param path the path
+     * @return the requested ItemStack list by path
+     */
+    public @Nonnull List<ItemStack> getItemStackList(@Nonnull String path) {
+        BValidate.notNull(path);
+
+        return new ArrayList<>((Collection<? extends ItemStack>) Optional.ofNullable(configuration.getList(path)).orElse(Collections.emptyList()));
+    }
+
+    /**
      * Gets the requested ItemStack by path
      *
      * @param path the path
@@ -202,7 +212,7 @@ public final class BSetting {
 
         return Optional.ofNullable(configuration.getConfigurationSection(path))
                 .map(configurationSection -> configurationSection.getKeys(false))
-                .orElseThrow(IllegalPathStateException::new);
+                .orElse(Collections.emptySet());
     }
 
     /**

@@ -4,7 +4,6 @@ import fr.bobinho.bcrate.BCrateCore;
 import fr.bobinho.bcrate.api.entity.BEntity;
 import fr.bobinho.bcrate.api.entity.base.BArmorStandEntity;
 import fr.bobinho.bcrate.api.entity.type.BArmoredEntity;
-import fr.bobinho.bcrate.api.item.BItemBuilder;
 import fr.bobinho.bcrate.api.location.BLocation;
 import fr.bobinho.bcrate.api.setting.BSetting;
 import fr.bobinho.bcrate.api.stream.IndexedStream;
@@ -12,6 +11,8 @@ import fr.bobinho.bcrate.api.validate.BValidate;
 import fr.bobinho.bcrate.util.crate.edit.color.Color;
 import fr.bobinho.bcrate.util.crate.edit.size.Size;
 import fr.bobinho.bcrate.util.crate.listener.CrateListener;
+import fr.bobinho.bcrate.util.crate.type.CrateEW;
+import fr.bobinho.bcrate.util.crate.type.CrateNS;
 import fr.bobinho.bcrate.util.key.Key;
 import fr.bobinho.bcrate.util.key.KeyManager;
 import fr.bobinho.bcrate.util.prize.Prize;
@@ -20,6 +21,7 @@ import fr.bobinho.bcrate.util.tag.Tag;
 import fr.bobinho.bcrate.util.tag.TagManager;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -108,14 +110,19 @@ public class CrateManager {
      * @param color    the color
      * @param key      the key
      */
-    public static void create(@Nonnull String name, @Nonnull Size size, @Nonnull Location location, @Nonnull Color color, @Nonnull Key key) {
+    public static void create(@Nonnull Player player, @Nonnull String name, @Nonnull Size size, @Nonnull Location location, @Nonnull Color color, @Nonnull Key key, @Nonnull List<ItemStack> skin) {
+        BValidate.notNull(player);
         BValidate.notNull(name);
         BValidate.notNull(size);
         BValidate.notNull(location);
         BValidate.notNull(color);
         BValidate.notNull(key);
+        BValidate.notNull(skin);
 
-        crates.put(name, new Crate(name, size, location, color, key, createStructure(location)));
+        crates.put(name, player.getFacing() == BlockFace.NORTH || player.getFacing() == BlockFace.SOUTH ?
+                new CrateNS(name, size, location, color, key, skin, createStructure(location, true))
+                :
+                new CrateEW(name, size, location, color, key, skin, createStructure(location, false)));
     }
 
     /**
@@ -193,6 +200,26 @@ public class CrateManager {
     }
 
     /**
+     * Changes the skin of the crate
+     *
+     * @param name the name
+     * @param skin the skin
+     * @param slot the slot
+     */
+    public static void changeSkin(@Nonnull String name, @Nonnull ItemStack skin, int slot) {
+        BValidate.notNull(name);
+        BValidate.notNull(skin);
+
+        get(name).ifPresent(crate -> {
+            crate.skin().set((slot - 10) / 2, skin);
+
+            if (slot == 10) {
+                crate.structure().get(0).setEquipment(BArmoredEntity.Equipment.HELMET, skin).render();
+            }
+        });
+    }
+
+    /**
      * Adds a prize to the crate
      *
      * @param item  the item
@@ -222,9 +249,10 @@ public class CrateManager {
      * Creates the structure
      *
      * @param location the location
+     * @param isNS     the direction
      * @return the structure
      */
-    private static @Nonnull List<BArmorStandEntity> createStructure(@Nonnull Location location) {
+    private static @Nonnull List<BArmorStandEntity> createStructure(@Nonnull Location location, boolean isNS) {
         BValidate.notNull(location);
 
         Point2D.Double[] move = {
@@ -250,9 +278,20 @@ public class CrateManager {
             double moveX = move[moveIndex].getX();
             double moveY = move[moveIndex].getY();
 
-            return new BArmorStandEntity(location.clone().add(0, i < 4 ? 0 : moveX, i < 4 ? 0 : (i < 18 ? moveY : -moveY)))
-                    .setEquipment(BArmoredEntity.Equipment.HELMET, new BItemBuilder((i == 0 ? Material.DIAMOND_SHOVEL : Material.AIR)).durability(26).build())
-                    .setHeadPose(i < 4 ? 0 : (i < 18 ? -angle : angle), 0, 0);
+            Location newLocation = isNS ?
+                    location.clone().add(i < 4 ? 0 : (i < 18 ? -moveY : moveY), i < 4 ? 0 : moveX, 0)
+                    :
+                    location.clone().add(0, i < 4 ? 0 : moveX, i < 4 ? 0 : (i < 18 ? moveY : -moveY));
+
+            if (i == 2 || i == 3) {
+                newLocation.setYaw(0.0F);
+                newLocation.setYaw(BLocation.degreeToYaw(isNS ? 90.0F : 180.0F));
+            }
+
+            return new BArmorStandEntity(newLocation)
+                    .setRightArmPose(i == 2 || i == 3 ? -90 : 0, 0, 0)
+                    .setLeftArmPose(i == 2 || i == 3 ? -90 : 0, 0, 0)
+                    .setHeadPose(isNS ? 0 : (i < 4 ? 0 : (i < 18 ? -angle : angle)), isNS ? 90 : 0, isNS ? (i < 4 ? 0 : (i < 18 ? angle : -angle)) : 0);
         }).toList();
     }
 
@@ -302,6 +341,18 @@ public class CrateManager {
         BValidate.notNull(name);
 
         get(name).ifPresent(crate -> crate.showMenu().get().openInventory(player));
+    }
+
+    /**
+     * Opens the crate structure menu
+     *
+     * @param player the player
+     */
+    public static void openStructureMenu(@Nonnull Player player, @Nonnull String name) {
+        BValidate.notNull(player);
+        BValidate.notNull(name);
+
+        get(name).ifPresent(crate -> crate.structureMenu().get().openInventory(player));
     }
 
     /**
@@ -368,6 +419,8 @@ public class CrateManager {
             Location location = BLocation.getAsLocation(configuration.getString(crate + ".location"));
             Color color = Color.valueOf(configuration.getString(crate + ".color"));
             Key key = KeyManager.get(configuration.getString(crate + ".key")).orElseThrow(IllegalPathStateException::new);
+            List<ItemStack> skin = configuration.getItemStackList(crate + ".skin");
+            String direction = configuration.getString(crate + ".direction");
             List<Prize> prizes = configuration.getConfigurationSection(crate + ".prizes").stream().map(slot -> {
                 ItemStack item = configuration.getItemStack(crate + ".prizes." + slot + ".item");
                 double chance = configuration.getDouble(crate + ".prizes." + slot + ".chance");
@@ -378,7 +431,10 @@ public class CrateManager {
                 return new Prize(item, Integer.parseInt(slot), chance, rare, tags);
             }).collect(Collectors.toList());
 
-            crates.put(crate, new Crate(crate, size, prizes, location, color, key, createStructure(location)));
+            crates.put(crate, direction.equals("NS") ?
+                    new CrateNS(crate, size, prizes, location, color, key, skin, createStructure(location, true))
+                    :
+                    new CrateEW(crate, size, prizes, location, color, key, skin, createStructure(location, false)));
         });
     }
 
@@ -395,6 +451,8 @@ public class CrateManager {
             configuration.set(crate.name().get() + ".location", BLocation.getAsString(crate.location().get()));
             configuration.set(crate.name().get() + ".color", crate.color().get().name());
             configuration.set(crate.name().get() + ".key", crate.key().get().name().get());
+            configuration.set(crate.name().get() + ".skin", crate.skin().get());
+            configuration.set(crate.name().get() + ".direction", crate.direction().get());
 
             crate.prizes().get().forEach(prize -> {
                 configuration.set(crate.name().get() + ".prizes." + prize.slot().get() + ".item", prize.item().get());

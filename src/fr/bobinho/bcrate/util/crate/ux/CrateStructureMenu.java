@@ -7,16 +7,15 @@ import fr.bobinho.bcrate.api.validate.BValidate;
 import fr.bobinho.bcrate.util.crate.Crate;
 import fr.bobinho.bcrate.util.crate.notification.CrateNotification;
 import fr.bobinho.bcrate.wrapper.ReadOnlyMonoValuedAttribute;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 
 /**
- * Class representing the crate edit menu
+ * Class representing the crate structure menu
  */
-public class CrateEditMenu extends BMenu {
+public class CrateStructureMenu extends BMenu {
 
     /**
      * Fields
@@ -24,12 +23,12 @@ public class CrateEditMenu extends BMenu {
     private final ReadOnlyMonoValuedAttribute<Crate> crate;
 
     /**
-     * Creates a new crate edit menu
+     * Creates a new crate structure menu
      *
      * @param crate the crate
      */
-    public CrateEditMenu(@NotNull Crate crate) {
-        super(27, CrateNotification.CRATE_EDIT_MENU_NAME.getNotification(new BPlaceHolder("%name%", crate.name().get())));
+    public CrateStructureMenu(@NotNull Crate crate) {
+        super(27, CrateNotification.CRATE_STRUCTURE_MENU_NAME.getNotification(new BPlaceHolder("%name%", crate.name().get())));
 
         this.crate = new ReadOnlyMonoValuedAttribute<>(crate);
     }
@@ -52,15 +51,13 @@ public class CrateEditMenu extends BMenu {
 
         getInventory().clear();
 
-        getInventory().setItem(9, crate.get().color().get().getBackground());
+        getInventory().setItem(10, new BItemBuilder(crate.get().skin().get(0)).name(CrateNotification.CRATE_SKIN_CLOSE.getNotification()).build());
 
-        getInventory().setItem(11, crate.get().size().get().getBackground());
+        getInventory().setItem(12, new BItemBuilder(crate.get().skin().get(1)).name(CrateNotification.CRATE_SKIN_OPEN.getNotification()).build());
 
-        getInventory().setItem(13, crate.get().key().get().item().get());
+        getInventory().setItem(14, new BItemBuilder(crate.get().skin().get(2)).name(CrateNotification.CRATE_SKIN_LEFT.getNotification()).build());
 
-        getInventory().setItem(15, new BItemBuilder(Material.CHEST).name(CrateNotification.CRATE_EDIT_MENU_STRUCTURE.getNotification()).build());
-
-        getInventory().setItem(17, new BItemBuilder(Material.DIAMOND).name(CrateNotification.CRATE_EDIT_MENU_PRIZES.getNotification()).build());
+        getInventory().setItem(16, new BItemBuilder(crate.get().skin().get(3)).name(CrateNotification.CRATE_SKIN_RIGHT.getNotification()).build());
 
         player.openInventory(getInventory());
     }

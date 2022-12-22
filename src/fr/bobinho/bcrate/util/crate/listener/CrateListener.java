@@ -16,6 +16,7 @@ import fr.bobinho.bcrate.util.crate.notification.CrateNotification;
 import fr.bobinho.bcrate.util.crate.ux.CrateEditMenu;
 import fr.bobinho.bcrate.util.crate.ux.CratePrizeMenu;
 import fr.bobinho.bcrate.util.crate.ux.CrateShowMenu;
+import fr.bobinho.bcrate.util.crate.ux.CrateStructureMenu;
 import fr.bobinho.bcrate.util.key.Key;
 import fr.bobinho.bcrate.util.key.KeyManager;
 import fr.bobinho.bcrate.util.player.PlayerManager;
@@ -29,6 +30,7 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
@@ -134,30 +136,55 @@ public class CrateListener {
 
                     String name = ((CrateEditMenu) event.getClickedInventory().getHolder()).crate().get().name().get();
 
-                    if (event.getSlot() == 10) {
+                    if (event.getSlot() == 9) {
                         Color color = Color.getNext(Color.getColor(event.getCurrentItem()));
 
-                        event.getClickedInventory().setItem(10, color.getBackground());
+                        event.getClickedInventory().setItem(9, color.getBackground());
                         CrateManager.changeColor(name, color);
                     }
 
-                    if (event.getSlot() == 12) {
+                    if (event.getSlot() == 11) {
                         Size size = Size.getNext(Size.getSize(event.getCurrentItem()));
 
-                        event.getClickedInventory().setItem(12, size.getBackground());
+                        event.getClickedInventory().setItem(11, size.getBackground());
                         CrateManager.resize(name, size);
                     }
 
-                    if (event.getSlot() == 14) {
+                    if (event.getSlot() == 13) {
                         Key key = KeyManager.getNext(KeyManager.get(event.getCurrentItem()).get());
 
-                        event.getClickedInventory().setItem(14, key.item().get());
+                        event.getClickedInventory().setItem(13, key.item().get());
                         CrateManager.changeKey(name, key);
                     }
 
-                    if (event.getSlot() == 16) {
+                    if (event.getSlot() == 15) {
+                        CrateManager.openStructureMenu((Player) event.getWhoClicked(), name);
+                    }
+
+                    if (event.getSlot() == 17) {
                         CrateManager.openPrizeMenu((Player) event.getWhoClicked(), name);
                     }
+                });
+
+        BEvent.registerEvent(InventoryClickEvent.class)
+                .filter(event -> event.getInventory().getHolder() instanceof CrateStructureMenu)
+                .filter(event -> event.getClick() != ClickType.RIGHT && event.getClick() != ClickType.LEFT)
+                .consume(event -> event.setCancelled(true));
+
+        BEvent.registerEvent(InventoryClickEvent.class)
+                .filter(event -> event.getClickedInventory() != null)
+                .filter(event -> event.getClickedInventory().getHolder() instanceof CrateStructureMenu)
+                .filter(event -> event.getCursor() != null && event.getCursor().getType() != Material.AIR)
+                .consume(event -> {
+
+                    if (!List.of(10, 12, 14, 16).contains(event.getSlot()) && event.getClickedInventory().getType() != InventoryType.PLAYER) {
+                        event.setCancelled(true);
+                        return;
+                    }
+
+                    String name = ((CrateStructureMenu) event.getClickedInventory().getHolder()).crate().get().name().get();
+
+                    CrateManager.changeSkin(name, event.getCursor(), event.getSlot());
                 });
 
         BEvent.registerEvent(InventoryClickEvent.class)

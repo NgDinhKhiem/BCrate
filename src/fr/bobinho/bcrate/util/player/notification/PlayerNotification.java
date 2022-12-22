@@ -13,9 +13,13 @@ import java.util.List;
  */
 public enum PlayerNotification implements BNotification {
     PLAYER_NOT_REGISTERED,
+    PLAYER_YOU_INVENTORY_FULL,
     PLAYER_INVENTORY_FULL,
     PLAYER_HAVENT_KEY,
     PLAYER_GIVE_KEY,
+    PLAYER_REMOVE_KEY,
+    PLAYER_RECEIVE_KEY,
+    PLAYER_LOOSE_KEY,
     PLAYER_EMPTY_HAND;
 
     /**
