@@ -85,9 +85,8 @@ public class KeyManager {
      */
     public static @Nonnull Optional<Key> get(@Nonnull ItemStack item) {
         BValidate.notNull(item);
-
         return keys.entrySet().stream()
-                .filter(key -> BColor.color(key.getKey()).equals(item.getItemMeta().getDisplayName()))
+                .filter(key -> BColor.cleanColor(key.getKey()).equals(item.getItemMeta().getDisplayName()))
                 .map(Map.Entry::getValue)
                 .findFirst();
     }

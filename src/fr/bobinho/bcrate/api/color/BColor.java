@@ -1,6 +1,8 @@
 package fr.bobinho.bcrate.api.color;
 
+import fr.bobinho.bcrate.api.item.BItemBuilder;
 import net.md_5.bungee.api.ChatColor;
+import org.bukkit.Material;
 
 import javax.annotation.Nonnull;
 
@@ -117,6 +119,16 @@ public final class BColor {
      */
     public static @Nonnull String color(@Nonnull String text) {
         return ChatColor.translateAlternateColorCodes('&', text);
+    }
+
+    /**
+     * Cleans the text
+     *
+     * @param text the text
+     * @return the cleaned text
+     */
+    public static @Nonnull String cleanColor(@Nonnull String text) {
+        return new BItemBuilder(Material.STICK).name(color(text)).build().getItemMeta().getDisplayName();
     }
 
 }

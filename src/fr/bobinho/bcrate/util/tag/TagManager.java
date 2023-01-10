@@ -78,7 +78,7 @@ public class TagManager {
         BValidate.notNull(item);
 
         return tags.entrySet().stream()
-                .filter(tag -> BColor.color(tag.getKey()).equals(item.getItemMeta().getDisplayName()))
+                .filter(tag -> BColor.cleanColor(tag.getKey()).equals(item.getItemMeta().getDisplayName()))
                 .map(Map.Entry::getValue)
                 .findFirst();
     }

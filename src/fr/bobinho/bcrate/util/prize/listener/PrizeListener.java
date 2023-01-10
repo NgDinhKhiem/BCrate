@@ -8,11 +8,14 @@ import fr.bobinho.bcrate.util.prize.Prize;
 import fr.bobinho.bcrate.util.prize.PrizeManager;
 import fr.bobinho.bcrate.util.prize.notification.PrizeNotification;
 import fr.bobinho.bcrate.util.prize.ux.PrizeEditMenu;
+import fr.bobinho.bcrate.util.prize.ux.PrizeSkinMenu;
 import fr.bobinho.bcrate.util.tag.TagManager;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 
 import javax.annotation.Nonnull;
@@ -26,6 +29,7 @@ public class PrizeListener {
     public static void registerEvents() {
         onInteractWithPrizeMenu();
         onChangePrizeTag();
+        onChangePrizeSkin();
     }
 
     /**
@@ -106,6 +110,32 @@ public class PrizeListener {
 
                     //Messages
                     player.sendMessage(PrizeNotification.PRIZE_CHANCE_CHANGED.getNotification(new BPlaceHolder("%chance%", String.valueOf(chance))));
+                });
+    }
+
+    /**
+     * Listens change prize skin
+     */
+    private static void onChangePrizeSkin() {
+        BEvent.registerEvent(InventoryClickEvent.class)
+                .filter(event -> event.getInventory().getHolder() instanceof PrizeSkinMenu)
+                .filter(event -> event.getClick() != ClickType.RIGHT && event.getClick() != ClickType.LEFT)
+                .consume(event -> event.setCancelled(true));
+
+        BEvent.registerEvent(InventoryClickEvent.class)
+                .filter(event -> event.getClickedInventory() != null)
+                .filter(event -> event.getClickedInventory().getHolder() instanceof PrizeSkinMenu)
+                .filter(event -> event.getCursor() != null && event.getCursor().getType() != Material.AIR)
+                .consume(event -> {
+
+                    if (event.getSlot() != 13 && event.getClickedInventory().getType() != InventoryType.PLAYER) {
+                        event.setCancelled(true);
+                        return;
+                    }
+
+                    Prize prize = ((PrizeSkinMenu) event.getClickedInventory().getHolder()).prize().get();
+
+                    PrizeManager.changeSkin(prize, event.getCursor());
                 });
     }
 

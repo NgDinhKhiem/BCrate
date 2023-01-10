@@ -230,7 +230,7 @@ public class CrateManager {
         BValidate.notNull(item);
         BValidate.notNull(crate);
 
-        crate.prizes().add(new Prize(item, slot, item.getType() == Material.BARRIER ? 0 : 50));
+        crate.prizes().add(new Prize(item, item, slot, item.getType() == Material.BARRIER ? 0 : 50));
     }
 
     /**
@@ -415,21 +415,23 @@ public class CrateManager {
 
         //Loads all crates
         configuration.getKeys().forEach(crate -> {
+            List<Prize> prizes = configuration.getConfigurationSection(crate + ".prizes").stream().map(slot -> {
+                ItemStack item = configuration.getItemStack(crate + ".prizes." + slot + ".item");
+                ItemStack skin = configuration.getItemStack(crate + ".prizes." + slot + ".skin");
+                double chance = configuration.getDouble(crate + ".prizes." + slot + ".chance");
+                boolean rare = configuration.getBoolean(crate + ".prizes." + slot + ".rarity");
+                List<Tag> tags = configuration.getStringList(crate + ".prizes." + slot + ".tags").stream().map(tag ->
+                        TagManager.get(tag).orElseThrow(IllegalPathStateException::new)).collect(Collectors.toList());
+
+                return new Prize(item, skin, Integer.parseInt(slot), chance, rare, tags);
+            }).collect(Collectors.toList());
+
             Size size = Size.valueOf(configuration.getString(crate + ".size"));
             Location location = BLocation.getAsLocation(configuration.getString(crate + ".location"));
             Color color = Color.valueOf(configuration.getString(crate + ".color"));
             Key key = KeyManager.get(configuration.getString(crate + ".key")).orElseThrow(IllegalPathStateException::new);
             List<ItemStack> skin = configuration.getItemStackList(crate + ".skin");
             String direction = configuration.getString(crate + ".direction");
-            List<Prize> prizes = configuration.getConfigurationSection(crate + ".prizes").stream().map(slot -> {
-                ItemStack item = configuration.getItemStack(crate + ".prizes." + slot + ".item");
-                double chance = configuration.getDouble(crate + ".prizes." + slot + ".chance");
-                boolean rare = configuration.getBoolean(crate + ".prizes." + slot + ".rarity");
-                List<Tag> tags = configuration.getStringList(crate + ".prizes." + slot + ".tags").stream().map(tag ->
-                        TagManager.get(tag).orElseThrow(IllegalPathStateException::new)).collect(Collectors.toList());
-
-                return new Prize(item, Integer.parseInt(slot), chance, rare, tags);
-            }).collect(Collectors.toList());
 
             crates.put(crate, direction.equals("NS") ?
                     new CrateNS(crate, size, prizes, location, color, key, skin, createStructure(location, true))
@@ -456,6 +458,7 @@ public class CrateManager {
 
             crate.prizes().get().forEach(prize -> {
                 configuration.set(crate.name().get() + ".prizes." + prize.slot().get() + ".item", prize.item().get());
+                configuration.set(crate.name().get() + ".prizes." + prize.slot().get() + ".skin", prize.skin().get());
                 configuration.set(crate.name().get() + ".prizes." + prize.slot().get() + ".chance", prize.chance().get());
                 configuration.set(crate.name().get() + ".prizes." + prize.slot().get() + ".rarity", prize.rarity().get());
                 configuration.set(crate.name().get() + ".prizes." + prize.slot().get() + ".tags", prize.tags().get().stream().map(tag -> tag.name().get()).toList());

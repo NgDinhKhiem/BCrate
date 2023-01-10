@@ -59,7 +59,7 @@ public class CrateEW extends Crate {
         List<Prize> items = metadata().getNonNull("prizes");
 
         List.of(2, 3).forEach(i -> {
-            Location newLocation = location().get().add(0.6, 0.5, i == 2 ? 0.4 : -0.4);
+            Location newLocation = location().get().add(0, 0.5, 0);
             newLocation.setPitch(0.0F);
             newLocation.setYaw(BLocation.degreeToYaw(90.0F));
 
@@ -67,7 +67,7 @@ public class CrateEW extends Crate {
                     .setRightArmPose(-90, 0, 0)
                     .setLeftArmPose(-90, 0, 0)
                     .teleport(newLocation)
-                    .setEquipment(i == 2 ? BArmoredEntity.Equipment.MAIN_HAND : BArmoredEntity.Equipment.OFF_HAND, items.get(i - 2).item().get()).render();
+                    .setEquipment(BArmoredEntity.Equipment.HELMET, items.get(i - 2).skin().get()).render();
         });
 
         location().get().getWorld().playSound(location().get(), Sound.ENTITY_EVOKER_CAST_SPELL, 1, 2);
@@ -80,7 +80,7 @@ public class CrateEW extends Crate {
     protected void run() {
         structure().get(0).setEquipment(BArmoredEntity.Equipment.HELMET, skin().get(0)).render();
         List.of(2, 3).forEach(i -> {
-            Location newLocation = location().get().add(0.6, 0.5, i == 2 ? 0.4 : -0.4);
+            Location newLocation = location().get().add(0, 0.5, 0);
             newLocation.setPitch(0.0F);
             newLocation.setYaw(BLocation.degreeToYaw(90.0F));
 
@@ -97,7 +97,7 @@ public class CrateEW extends Crate {
 
                 if (degree <= 1.5) {
                     List.of(2, 3).forEach(i -> {
-                        Location newLocation = location().get().add(0.6, 0.5 - Math.pow((degree - 0.6329113) * 1.58, 2) + 1, i == 2 ? 0.4 - degree : -0.4 + degree);
+                        Location newLocation = location().get().add(0, 0.5 - Math.pow((degree - 0.6329113) * 1.58, 2) + 1, i == 2 ? -degree : degree);
                         newLocation.setPitch(0.0F);
                         newLocation.setYaw(BLocation.degreeToYaw(90.0F));
 
@@ -131,7 +131,7 @@ public class CrateEW extends Crate {
                     player.getInventory().addItem(items.stream().map(prize -> prize.item().get()).toArray(ItemStack[]::new));
                     metadata().add("close").remove("restart").set("open:degree", 130);
                     List.of(2, 3).forEach(i -> {
-                        Location newLocation = location().get().add(0.6, 0.5, i == 2 ? 0.4 : -0.4);
+                        Location newLocation = location().get().add(0, 0.5, 0);
                         newLocation.setPitch(0.0F);
                         newLocation.setYaw(BLocation.degreeToYaw(90.0F));
 
@@ -149,7 +149,7 @@ public class CrateEW extends Crate {
                     });
                 } else {
                     List.of(2, 3).forEach(i -> {
-                        Location newLocation = location().get().add(0.6, 0.37690040004 - Math.abs(((degree % 360) - 180) / 600) + 0.3, i == 2 ? -1.1 : 1.1);
+                        Location newLocation = location().get().add(0, 0.37690040004 - Math.abs(((degree % 360) - 180) / 600) + 0.3, i == 2 ? -1.5 : 1.5);
                         newLocation.setPitch(0.0F);
                         newLocation.setYaw(BLocation.degreeToYaw(90.0F));
 

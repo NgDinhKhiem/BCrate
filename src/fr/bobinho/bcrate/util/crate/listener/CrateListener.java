@@ -209,6 +209,13 @@ public class CrateListener {
                                 PrizeManager.openEditMenu((Player) event.getWhoClicked(), prize));
                         return;
                     }
+                    if (event.getClick() == ClickType.RIGHT) {
+                        event.setCancelled(true);
+
+                        PrizeManager.get(((CratePrizeMenu) event.getClickedInventory().getHolder()).crate().get(), event.getSlot()).ifPresent(prize ->
+                                PrizeManager.openSkinMenu((Player) event.getWhoClicked(), prize));
+                        return;
+                    }
                     if (event.getClickedInventory().getType() == InventoryType.PLAYER && !event.getClick().isShiftClick()) {
                         return;
                     }

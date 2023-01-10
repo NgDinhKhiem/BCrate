@@ -5,6 +5,7 @@ import fr.bobinho.bcrate.util.crate.Crate;
 import fr.bobinho.bcrate.util.prize.listener.PrizeListener;
 import fr.bobinho.bcrate.util.tag.Tag;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
 import java.util.Optional;
@@ -81,6 +82,18 @@ public class PrizeManager {
     }
 
     /**
+     * Changes the skin
+     *
+     * @param prize  the prize
+     * @param skin the skin
+     */
+    public static void changeSkin(@Nonnull Prize prize, @Nonnull ItemStack skin) {
+        BValidate.notNull(prize);
+
+        prize.skin().set(skin);
+    }
+
+    /**
      * Opens the prize edit menu
      *
      * @param player the player
@@ -89,4 +102,12 @@ public class PrizeManager {
         prize.editMenu().get().openInventory(player);
     }
 
+    /**
+     * Opens the prize skin menu
+     *
+     * @param player the player
+     */
+    public static void openSkinMenu(@Nonnull Player player, @Nonnull Prize prize) {
+        prize.skinMenu().get().openInventory(player);
+    }
 }

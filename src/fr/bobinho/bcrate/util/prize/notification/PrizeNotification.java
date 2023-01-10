@@ -13,6 +13,7 @@ import java.util.List;
  */
 public enum PrizeNotification implements BNotification {
     PRIZE_MENU_NAME,
+    PRIZE_SKIN_MENU_NAME,
     PRIZE_CHANCE,
     PRIZE_ASK_CHANCE,
     PRIZE_INVALID_CHANCE,
