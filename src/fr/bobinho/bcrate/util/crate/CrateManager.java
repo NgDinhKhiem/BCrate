@@ -284,13 +284,10 @@ public class CrateManager {
                     location.clone().add(0, i < 4 ? 0 : moveX, i < 4 ? 0 : (i < 18 ? moveY : -moveY));
 
             if (i == 2 || i == 3) {
-                newLocation.setYaw(0.0F);
-                newLocation.setYaw(BLocation.degreeToYaw(isNS ? 90.0F : 180.0F));
+                return new BArmorStandEntity(newLocation);
             }
 
             return new BArmorStandEntity(newLocation)
-                    .setRightArmPose(i == 2 || i == 3 ? -90 : 0, 0, 0)
-                    .setLeftArmPose(i == 2 || i == 3 ? -90 : 0, 0, 0)
                     .setHeadPose(isNS ? 0 : (i < 4 ? 0 : (i < 18 ? -angle : angle)), isNS ? 90 : 0, isNS ? (i < 4 ? 0 : (i < 18 ? angle : -angle)) : 0);
         }).toList();
     }

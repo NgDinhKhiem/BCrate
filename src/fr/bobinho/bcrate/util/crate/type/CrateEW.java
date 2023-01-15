@@ -61,7 +61,7 @@ public class CrateEW extends Crate {
         List.of(2, 3).forEach(i -> {
             Location newLocation = location().get().add(0, 0.5, 0);
             newLocation.setPitch(0.0F);
-            newLocation.setYaw(BLocation.degreeToYaw(90.0F));
+            newLocation.setYaw(BLocation.degreeToYaw(270.0F));
 
             structure().get(i)
                     .setRightArmPose(-90, 0, 0)
@@ -82,7 +82,7 @@ public class CrateEW extends Crate {
         List.of(2, 3).forEach(i -> {
             Location newLocation = location().get().add(0, 0.5, 0);
             newLocation.setPitch(0.0F);
-            newLocation.setYaw(BLocation.degreeToYaw(90.0F));
+            newLocation.setYaw(BLocation.degreeToYaw(270.0F));
 
             structure().get(i)
                     .setRightArmPose(-90, 0, 0)
@@ -99,7 +99,7 @@ public class CrateEW extends Crate {
                     List.of(2, 3).forEach(i -> {
                         Location newLocation = location().get().add(0, 0.5 - Math.pow((degree - 0.6329113) * 1.58, 2) + 1, i == 2 ? -degree : degree);
                         newLocation.setPitch(0.0F);
-                        newLocation.setYaw(BLocation.degreeToYaw(90.0F));
+                        newLocation.setYaw(BLocation.degreeToYaw(270.0F));
 
                         structure().get(i)
                                 .teleport(newLocation)
@@ -133,7 +133,7 @@ public class CrateEW extends Crate {
                     List.of(2, 3).forEach(i -> {
                         Location newLocation = location().get().add(0, 0.5, 0);
                         newLocation.setPitch(0.0F);
-                        newLocation.setYaw(BLocation.degreeToYaw(90.0F));
+                        newLocation.setYaw(BLocation.degreeToYaw(270.0F));
 
                         structure().get(i).teleport(newLocation).clearEquipments().render();
                         location().get().getWorld().spawnParticle(
@@ -151,7 +151,7 @@ public class CrateEW extends Crate {
                     List.of(2, 3).forEach(i -> {
                         Location newLocation = location().get().add(0, 0.37690040004 - Math.abs(((degree % 360) - 180) / 600) + 0.3, i == 2 ? -1.5 : 1.5);
                         newLocation.setPitch(0.0F);
-                        newLocation.setYaw(BLocation.degreeToYaw(90.0F));
+                        newLocation.setYaw(BLocation.degreeToYaw(270.0F));
 
                         structure().get(i)
                                 .teleport(newLocation)
