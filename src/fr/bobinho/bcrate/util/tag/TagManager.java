@@ -107,6 +107,7 @@ public class TagManager {
         BValidate.notNull(description);
 
         tags.put(name, new Tag(name, BColor.color(description)));
+        save();
     }
 
     /**
@@ -118,6 +119,7 @@ public class TagManager {
         BValidate.notNull(name);
 
         get(name).ifPresent(tag -> tags.remove(tag.name().get()));
+        save();
     }
 
     /**
@@ -139,7 +141,7 @@ public class TagManager {
         configuration.getKeys().forEach(tag -> {
             String description = configuration.getString(tag + ".description");
 
-            create(tag, description);
+            tags.put(tag, new Tag(tag, BColor.color(description)));
         });
     }
 

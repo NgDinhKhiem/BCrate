@@ -9,6 +9,7 @@ import fr.bobinho.bcrate.util.crate.edit.color.Color;
 import fr.bobinho.bcrate.util.crate.edit.size.Size;
 import fr.bobinho.bcrate.util.crate.notification.CrateNotification;
 import fr.bobinho.bcrate.util.key.Key;
+import fr.bobinho.bcrate.util.player.PlayerManager;
 import fr.bobinho.bcrate.util.prize.Prize;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -138,7 +139,7 @@ public class CrateEW extends Crate {
                         structure().get(i).teleport(newLocation).clearEquipments().render();
                         location().get().getWorld().spawnParticle(
                                 Particle.REDSTONE,
-                                location().get().add(0, 1.5, i == 2 ? -1.5 : 1.5),
+                                location().get().add(0, 2.5, i == 2 ? -1.5 : 1.5),
                                 10,
                                 0.2,
                                 0.2,
@@ -169,6 +170,9 @@ public class CrateEW extends Crate {
                 //Restarts and give prizes
 
                 if (degree < 0) {
+                    Player player = metadata().getNonNull("player");
+                    PlayerManager.openCrate(player.getUniqueId(), false);
+
                     metadata().remove("player").remove("prizes").remove("open").remove("close").remove("open:degree").add("spine");
 
                     structure().get(0).setEquipment(BArmoredEntity.Equipment.HELMET, skin().get(0)).render();

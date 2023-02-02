@@ -1,6 +1,5 @@
 package fr.bobinho.bcrate.util.player;
 
-import com.google.common.collect.Streams;
 import fr.bobinho.bcrate.BCrateCore;
 import fr.bobinho.bcrate.api.item.BItemBuilder;
 import fr.bobinho.bcrate.api.setting.BSetting;
@@ -11,6 +10,7 @@ import fr.bobinho.bcrate.util.key.KeyManager;
 import fr.bobinho.bcrate.util.player.listener.PlayerListener;
 import fr.bobinho.bcrate.util.prize.Prize;
 import org.bukkit.Bukkit;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
@@ -88,6 +88,7 @@ public class PlayerManager {
 
         players.put(uuid, new BPlayer(uuid));
         KeyManager.stream().forEach(key -> configuration.isInt(uuid + "." + key.name().get()).ifPresent(amount -> addKey(uuid, key, amount)));
+        save();
     }
 
     /**
@@ -136,6 +137,23 @@ public class PlayerManager {
     }
 
     /**
+     * Clones the inventory
+     *
+     * @param inventory the inventory
+     * @return the cloned inventory
+     */
+    private static Inventory cloneInventory(@Nonnull Inventory inventory) {
+        BValidate.notNull(inventory);
+
+        Inventory copy = Bukkit.createInventory(null, 36);
+        for (int i = 0; i < 36; i++) {
+            copy.setItem(i, inventory.getItem(i) != null ? inventory.getItem(i).clone() : null);
+        }
+
+        return copy;
+    }
+
+    /**
      * Checks if the player can withdraw key
      *
      * @param uuid   the uuid
@@ -148,12 +166,9 @@ public class PlayerManager {
         BValidate.notNull(key);
 
         //Checks if the player inventory with keys will be full
-        return Optional.ofNullable(Bukkit.getPlayer(uuid)).map(player ->
-                Bukkit.createInventory(null, 36).addItem(
-                        Streams.concat(Arrays.stream(player.getInventory().getContents()).filter(Objects::nonNull),
-                                        Stream.of(new BItemBuilder(key.item().get()).amount(amount).build()))
-                                .toArray(ItemStack[]::new)).isEmpty()
-        ).orElse(false);
+        return Optional.ofNullable(Bukkit.getPlayer(uuid))
+                .map(player -> cloneInventory(player.getInventory()).addItem(new BItemBuilder(key.item().get()).amount(amount).build()).isEmpty())
+                .orElse(false);
     }
 
     /**
@@ -168,11 +183,27 @@ public class PlayerManager {
         BValidate.notNull(items);
 
         //Checks if the player inventory with items will be full
-        return Optional.ofNullable(Bukkit.getPlayer(uuid)).map(player ->
-                Bukkit.createInventory(null, 36).addItem(
-                        Streams.concat(Arrays.stream(player.getInventory().getContents()).filter(Objects::nonNull), items.stream().map(item -> item.item().get()))
-                                .toArray(ItemStack[]::new)).isEmpty()
-        ).orElse(false);
+        return Optional.ofNullable(Bukkit.getPlayer(uuid))
+                .map(player -> cloneInventory(player.getInventory()).addItem(items.stream().map(item -> item.item().get()).toArray(ItemStack[]::new)).isEmpty())
+                .orElse(false);
+    }
+
+    /**
+     * Checks if the player is opening a crate
+     *
+     * @param uuid the uuid
+     * @return true if the player is opening a crate, false otherwise
+     */
+    public static boolean isOpeningCrate(@Nonnull UUID uuid) {
+        BValidate.notNull(uuid);
+
+        return get(uuid).map(bPlayer -> bPlayer.isOpeningCrate().get()).orElse(false);
+    }
+
+    public static void openCrate(@Nonnull UUID uuid, boolean isOpening) {
+        BValidate.notNull(uuid);
+
+        get(uuid).ifPresent(bPlayer -> bPlayer.isOpeningCrate().set(isOpening));
     }
 
     /**
@@ -199,6 +230,7 @@ public class PlayerManager {
         BValidate.notNull(key);
 
         get(uuid).ifPresent(bPlayer -> bPlayer.keys().put(key, getKeyNumberWithdrawable(uuid, key) - amount));
+        save();
     }
 
     public static void addKey(@Nonnull UUID uuid, @Nonnull Key key, int amount) {
@@ -206,6 +238,7 @@ public class PlayerManager {
         BValidate.notNull(key);
 
         get(uuid).ifPresent(bPlayer -> bPlayer.keys().put(key, getKeyNumberWithdrawable(uuid, key) + amount));
+        save();
     }
 
     public static void withdrawKey(@Nonnull UUID uuid, @Nonnull Key key, int amount) {
@@ -215,6 +248,7 @@ public class PlayerManager {
         //Withdraws key
         Optional.ofNullable(Bukkit.getPlayer(uuid)).ifPresent(player -> IntStream.range(0, amount).forEach(i -> player.getInventory().addItem(key.item().get().clone())));
         removeKey(uuid, key, amount);
+        save();
     }
 
     public static void depositKey(@Nonnull UUID uuid, @Nonnull Key key, int amount) {
@@ -225,6 +259,7 @@ public class PlayerManager {
         Optional.ofNullable(Bukkit.getPlayer(uuid)).ifPresent(player ->
                 player.getInventory().removeItem(new BItemBuilder(key.item().get()).amount(amount).build()));
         addKey(uuid, key, amount);
+        save();
     }
 
     /**

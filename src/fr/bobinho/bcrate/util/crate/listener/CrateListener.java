@@ -75,7 +75,13 @@ public class CrateListener {
 
                         //Checks if the player inventory is full
                         if (!PlayerManager.canPlay(event.getPlayer().getUniqueId(), items)) {
-                            event.getPlayer().sendMessage(PlayerNotification.PLAYER_INVENTORY_FULL.getNotification());
+                            event.getPlayer().sendMessage(PlayerNotification.PLAYER_INVENTORY_FULL.getNotification(new BPlaceHolder("%player%", event.getPlayer().getDisplayName())));
+                            return;
+                        }
+
+                        //Checks if the player already have open a crate
+                        if (PlayerManager.isOpeningCrate(event.getPlayer().getUniqueId())) {
+                            event.getPlayer().sendMessage(PlayerNotification.PLAYER_ALREADY_USED_CRATE.getNotification());
                             return;
                         }
 

@@ -58,6 +58,9 @@ public class CrateManager {
      * Unregisters the crate manager
      */
     public static void unregister() {
+        crates.values().forEach(crate -> {
+            crate.structure().stream().forEach(BArmorStandEntity::remove);
+        });
         save();
     }
 
@@ -123,6 +126,7 @@ public class CrateManager {
                 new CrateNS(name, size, location, color, key, skin, createStructure(location, true))
                 :
                 new CrateEW(name, size, location, color, key, skin, createStructure(location, false)));
+        save();
     }
 
     /**
@@ -138,6 +142,7 @@ public class CrateManager {
             crates.remove(crate.name().get());
             crate.animation().stop();
         });
+        save();
     }
 
     /**
@@ -171,6 +176,7 @@ public class CrateManager {
             crate.prizeMenu().get().resize(size.getDimension());
             crate.showMenu().get().resize(size.getDimension());
         });
+        save();
     }
 
     /**
@@ -184,6 +190,7 @@ public class CrateManager {
         BValidate.notNull(color);
 
         get(name).ifPresent(crate -> crate.color().set(color));
+        save();
     }
 
     /**
@@ -197,6 +204,7 @@ public class CrateManager {
         BValidate.notNull(key);
 
         get(name).ifPresent(crate -> crate.key().set(key));
+        save();
     }
 
     /**
@@ -217,6 +225,7 @@ public class CrateManager {
                 crate.structure().get(0).setEquipment(BArmoredEntity.Equipment.HELMET, skin).render();
             }
         });
+        save();
     }
 
     /**
@@ -231,6 +240,7 @@ public class CrateManager {
         BValidate.notNull(crate);
 
         crate.prizes().add(new Prize(item, item, slot, item.getType() == Material.BARRIER ? 0 : 50));
+        save();
     }
 
     /**
@@ -243,6 +253,7 @@ public class CrateManager {
         BValidate.notNull(crate);
 
         PrizeManager.get(crate, slot).ifPresent(prize -> crate.prizes().remove(prize));
+        save();
     }
 
     /**
@@ -398,6 +409,10 @@ public class CrateManager {
      * Reloads all crates
      */
     public static void reload() {
+        crates.values().forEach(crate -> {
+            crate.structure().stream().forEach(BEntity::remove);
+            crate.animation().stop();
+        });
         crates.clear();
         configuration.initialize();
 
@@ -445,7 +460,6 @@ public class CrateManager {
 
         //Saves all crates
         crates.values().forEach(crate -> {
-            crate.structure().stream().forEach(BArmorStandEntity::remove);
             configuration.set(crate.name().get() + ".size", crate.size().get().name());
             configuration.set(crate.name().get() + ".location", BLocation.getAsString(crate.location().get()));
             configuration.set(crate.name().get() + ".color", crate.color().get().name());
@@ -458,7 +472,7 @@ public class CrateManager {
                 configuration.set(crate.name().get() + ".prizes." + prize.slot().get() + ".skin", prize.skin().get());
                 configuration.set(crate.name().get() + ".prizes." + prize.slot().get() + ".chance", prize.chance().get());
                 configuration.set(crate.name().get() + ".prizes." + prize.slot().get() + ".rarity", prize.rarity().get());
-                configuration.set(crate.name().get() + ".prizes." + prize.slot().get() + ".tags", prize.tags().get().stream().map(tag -> tag.name().get()).toList());
+                configuration.set(crate.name().get() + ".prizes." + prize.slot().get() + ".tags", prize.tags().get().stream().map(tag -> tag.name().get()).collect(Collectors.toList()));
             });
         });
 

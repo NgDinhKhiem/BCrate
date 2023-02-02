@@ -54,6 +54,7 @@ public final class TagCommand extends BCommand {
     @Subcommand("delete")
     @CommandPermission("tag.delete")
     @Description("Deletes a key.")
+    @CommandCompletion("@tags @empty")
     public void onCommandTagDelete(Player sender, String name) {
 
         //Checks if the key is not registered

@@ -56,8 +56,6 @@ public class PlayerListener {
                             .filter(crate -> crate.metadata().has("open") || crate.metadata().has("waitOpen") && crate.metadata().getNonNull("player").equals(event.getPlayer()))
                             .findFirst()
                             .ifPresent(crate -> unrecoveredPrizes.put(event.getPlayer().getUniqueId(), crate.metadata().getNonNull("prizes")));
-                    PlayerManager.save();
-                    PlayerManager.delete(event.getPlayer().getUniqueId());
                     CrateManager.stream().forEach(crate -> crate.structure().stream()
                             .forEach(structure -> structure.getRenderer().removeShownViewers(event.getPlayer().getUniqueId())));
                 });

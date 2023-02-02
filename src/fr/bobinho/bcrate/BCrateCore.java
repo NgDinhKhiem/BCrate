@@ -1,9 +1,9 @@
 package fr.bobinho.bcrate;
 
 import co.aikar.commands.PaperCommandManager;
+import com.google.common.collect.ImmutableList;
 import fr.bobinho.bcrate.api.command.BCommand;
 import fr.bobinho.bcrate.api.logger.BLogger;
-import fr.bobinho.bcrate.api.scheduler.BScheduler;
 import fr.bobinho.bcrate.api.setting.BSetting;
 import fr.bobinho.bcrate.util.crate.CrateManager;
 import fr.bobinho.bcrate.util.key.KeyManager;
@@ -15,7 +15,6 @@ import org.reflections.Reflections;
 
 import javax.annotation.Nonnull;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Core of the plugin
@@ -116,13 +115,6 @@ public final class BCrateCore extends JavaPlugin {
 
         //Registers commands
         registerCommands();
-
-        BScheduler.syncScheduler().every(1, TimeUnit.HOURS).run(() -> {
-            KeyManager.save();
-            TagManager.save();
-            PlayerManager.save();
-            CrateManager.save();
-        });
     }
 
     /**
@@ -144,6 +136,12 @@ public final class BCrateCore extends JavaPlugin {
      */
     private void registerCommands() {
         final PaperCommandManager commandManager = new PaperCommandManager(this);
+
+        commandManager.getCommandCompletions().registerCompletion("tags", c -> TagManager.stream().map(tag -> tag.name().get()).toList());
+        commandManager.getCommandCompletions().registerCompletion("keys", c -> KeyManager.stream().map(key -> key.name().get()).toList());
+        commandManager.getCommandCompletions().registerCompletion("crates", c -> CrateManager.stream().map(crate -> crate.name().get()).toList());
+        commandManager.getCommandCompletions().registerCompletion("empty", c -> ImmutableList.of(" "));
+
         Reflections reflections = new Reflections("fr.bobinho.bcrate.commands");
         Set<Class<? extends BCommand>> classes = reflections.getSubTypesOf(BCommand.class);
         for (@Nonnull Class<? extends BCommand> command : classes) {

@@ -78,6 +78,7 @@ public final class CrateCommand extends BCommand {
     @Subcommand("delete")
     @CommandPermission("crate.delete")
     @Description("Deletes a key.")
+    @CommandCompletion("@crates @empty")
     public void onCommandCrateDelete(Player sender, String name) {
 
         //Checks if the crate is not registered
@@ -100,6 +101,7 @@ public final class CrateCommand extends BCommand {
     @Subcommand("edit")
     @CommandPermission("crate.edit")
     @Description("Edits a crate.")
+    @CommandCompletion("@crates @empty")
     public void onCommandCrateEdit(Player sender, String name) {
 
         //Checks if the crate is not registered

@@ -20,7 +20,8 @@ public enum PlayerNotification implements BNotification {
     PLAYER_REMOVE_KEY,
     PLAYER_RECEIVE_KEY,
     PLAYER_LOOSE_KEY,
-    PLAYER_EMPTY_HAND;
+    PLAYER_EMPTY_HAND,
+    PLAYER_ALREADY_USED_CRATE;
 
     /**
      * {@inheritDoc}

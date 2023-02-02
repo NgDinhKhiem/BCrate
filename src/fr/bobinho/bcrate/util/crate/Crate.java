@@ -251,6 +251,8 @@ public abstract class Crate {
         BValidate.notNull(player);
         BValidate.notNull(prizes);
 
+        PlayerManager.openCrate(player.getUniqueId(), true);
+
         boolean finded = false;
         for (int i = player.getInventory().getSize() - 1; i >= 0 && !finded; i--) {
             if (player.getInventory().getItem(i) != null && player.getInventory().getItem(i).isSimilar(key.get().item().get())) {

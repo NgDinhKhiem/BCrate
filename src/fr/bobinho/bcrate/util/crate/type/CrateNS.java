@@ -9,6 +9,7 @@ import fr.bobinho.bcrate.util.crate.edit.color.Color;
 import fr.bobinho.bcrate.util.crate.edit.size.Size;
 import fr.bobinho.bcrate.util.crate.notification.CrateNotification;
 import fr.bobinho.bcrate.util.key.Key;
+import fr.bobinho.bcrate.util.player.PlayerManager;
 import fr.bobinho.bcrate.util.prize.Prize;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -18,9 +19,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 /**
  * Class representing the crate NS
@@ -139,7 +138,7 @@ public class CrateNS extends Crate {
                         structure().get(i).teleport(newLocation).clearEquipments().render();
                         location().get().getWorld().spawnParticle(
                                 Particle.REDSTONE,
-                                location().get().add(i == 2 ? -1.5 : 1.5, 1.5, 0),
+                                location().get().add(i == 2 ? -1.5 : 1.5, 2.5, 0),
                                 10,
                                 0.2,
                                 0.2,
@@ -170,6 +169,9 @@ public class CrateNS extends Crate {
                 //Restarts and give prizes
 
                 if (degree < 0) {
+                    Player player = metadata().getNonNull("player");
+                    PlayerManager.openCrate(player.getUniqueId(), false);
+
                     metadata().remove("player").remove("prizes").remove("open").remove("close").remove("open:degree").add("spine");
 
                     structure().get(0).setEquipment(BArmoredEntity.Equipment.HELMET, skin().get(0)).render();
@@ -195,6 +197,8 @@ public class CrateNS extends Crate {
                 } else {
                     Random r = new Random();
                     for (int j = 0; j < 8; j++) {
+                        List<Integer> rgb = new ArrayList<>(List.of(255, 0, r.nextInt(256)));
+                        Collections.shuffle(rgb);
                         location().get().getWorld().spawnParticle(
                                 Particle.REDSTONE,
                                 location().get().add(0.0D, 2.3D, 0.0D),
@@ -202,7 +206,7 @@ public class CrateNS extends Crate {
                                 0.2,
                                 0.2,
                                 0.2,
-                                new Particle.DustOptions(org.bukkit.Color.fromBGR(r.nextInt(256), r.nextInt(256), r.nextInt(256)), 2));
+                                new Particle.DustOptions(org.bukkit.Color.fromBGR(rgb.get(0), rgb.get(1), rgb.get(2)), 2));
                     }
 
                     structure().get(Math.max(4, 3 + degree / 10)).clearEquipments().render();

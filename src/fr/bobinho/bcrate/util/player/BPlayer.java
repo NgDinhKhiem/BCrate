@@ -2,6 +2,7 @@ package fr.bobinho.bcrate.util.player;
 
 import fr.bobinho.bcrate.api.validate.BValidate;
 import fr.bobinho.bcrate.util.key.Key;
+import fr.bobinho.bcrate.wrapper.MonoValuedAttribute;
 import fr.bobinho.bcrate.wrapper.MultiValuedAttributeRelation;
 import fr.bobinho.bcrate.wrapper.ReadOnlyMonoValuedAttribute;
 
@@ -20,6 +21,7 @@ public class BPlayer {
      */
     private final ReadOnlyMonoValuedAttribute<UUID> uuid;
     private final MultiValuedAttributeRelation<Key, Integer> keys;
+    private final MonoValuedAttribute<Boolean> isOpeningCrate = new MonoValuedAttribute<>(false);
 
     /**
      * Creates a new player
@@ -60,6 +62,15 @@ public class BPlayer {
      */
     public @Nonnull MultiValuedAttributeRelation<Key, Integer> keys() {
         return keys;
+    }
+
+    /**
+     * Gets the opening crate wrapper
+     *
+     * @return the opening crate wrapper
+     */
+    public @Nonnull MonoValuedAttribute<Boolean> isOpeningCrate() {
+        return isOpeningCrate;
     }
 
 }

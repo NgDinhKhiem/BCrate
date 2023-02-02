@@ -83,6 +83,7 @@ public final class KeyCommand extends BCommand {
     @Subcommand("delete")
     @CommandPermission("keys.delete")
     @Description("Deletes a key.")
+    @CommandCompletion("@keys @empty")
     public void onCommandKeysDelete(Player sender, String name) {
 
         //Checks if the key is not registered
@@ -111,6 +112,7 @@ public final class KeyCommand extends BCommand {
     @Subcommand("give")
     @CommandPermission("keys.give")
     @Description("Gives a key.")
+    @CommandCompletion("@players @empty @keys @empty")
     public void onCommandKeysGive(Player sender, String receiver, int amount, String name) {
 
         Optional<Player> player = Optional.ofNullable(Bukkit.getPlayer(receiver));
@@ -148,6 +150,7 @@ public final class KeyCommand extends BCommand {
     @Subcommand("deposit")
     @CommandPermission("keys.deposit")
     @Description("Deposits a key.")
+    @CommandCompletion("@players @empty @keys @empty")
     public void onCommandKeysDeposit(Player sender, String receiver, int amount, String name) {
 
         Optional<Player> player = Optional.ofNullable(Bukkit.getPlayer(receiver));
@@ -188,6 +191,7 @@ public final class KeyCommand extends BCommand {
     @Subcommand("withdraw")
     @CommandPermission("keys.withdraw")
     @Description("Withdraws a key.")
+    @CommandCompletion("@players @empty @keys @empty")
     public void onCommandKeysWithdraw(Player sender, String receiver, int amount, String name) {
 
         Optional<Player> player = Optional.ofNullable(Bukkit.getPlayer(receiver));
@@ -228,6 +232,7 @@ public final class KeyCommand extends BCommand {
     @Subcommand("info")
     @CommandPermission("keys.info")
     @Description("Gets key informations about player.")
+    @CommandCompletion("@players @empty")
     public void onCommandKeysInfo(Player sender, String receiver) {
 
         Optional<Player> player = Optional.ofNullable(Bukkit.getPlayer(receiver));

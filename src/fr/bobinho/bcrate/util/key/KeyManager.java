@@ -126,6 +126,7 @@ public class KeyManager {
         BValidate.notNull(item);
 
         keys.put(name, new Key(name, new BItemBuilder(item).name(BColor.color(name)).build(), keys.size()));
+        save();
     }
 
     /**
@@ -137,6 +138,7 @@ public class KeyManager {
         BValidate.notNull(name);
 
         get(name).ifPresent(key -> keys.remove(key.name().get()));
+        save();
     }
 
     /**
@@ -172,6 +174,7 @@ public class KeyManager {
         BValidate.notNull(name);
 
         get(name).ifPresent(key -> player.getInventory().addItem(new BItemBuilder(key.item().get()).amount(amount).build()));
+        save();
     }
 
 
