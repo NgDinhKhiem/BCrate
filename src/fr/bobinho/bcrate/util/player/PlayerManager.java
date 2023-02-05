@@ -175,17 +175,20 @@ public class PlayerManager {
      * Checks if the player can play
      *
      * @param uuid  the uuid
-     * @param items the rewards
+     * @param crate the crate
      * @return true if the player can play, false otherwise
      */
-    public static boolean canPlay(@Nonnull UUID uuid, @Nonnull List<Prize> items) {
+    public static boolean canPlay(@Nonnull UUID uuid, @Nonnull Crate crate) {
         BValidate.notNull(uuid);
-        BValidate.notNull(items);
+        BValidate.notNull(crate);
 
-        //Checks if the player inventory with items will be full
-        return Optional.ofNullable(Bukkit.getPlayer(uuid))
-                .map(player -> cloneInventory(player.getInventory()).addItem(items.stream().map(item -> item.item().get()).toArray(ItemStack[]::new)).isEmpty())
-                .orElse(false);
+        return IntStream.range(0, crate.prizes().size() - 1)
+            .boxed()
+            .allMatch(i -> IntStream.range(i + 1, crate.prizes().size()).allMatch(j ->
+                Optional.ofNullable(Bukkit.getPlayer(uuid))
+                    .map(player -> cloneInventory(player.getInventory()).addItem(new ItemStack[]{crate.prizes().get(i).item().get(), crate.prizes().get(j).item().get()}).isEmpty())
+                    .orElse(false)
+            ));
     }
 
     /**

@@ -70,14 +70,13 @@ public class CrateListener {
                             return;
                         }
 
-                        List<Prize> items = CrateManager.play(crate.name().get());
-
-
                         //Checks if the player inventory is full
-                        if (!PlayerManager.canPlay(event.getPlayer().getUniqueId(), items)) {
+                        if (!PlayerManager.canPlay(event.getPlayer().getUniqueId(), crate)) {
                             event.getPlayer().sendMessage(PlayerNotification.PLAYER_INVENTORY_FULL.getNotification(new BPlaceHolder("%player%", event.getPlayer().getDisplayName())));
                             return;
                         }
+
+                        List<Prize> items = CrateManager.play(crate.name().get());
 
                         //Checks if the player already have open a crate
                         if (PlayerManager.isOpeningCrate(event.getPlayer().getUniqueId())) {
