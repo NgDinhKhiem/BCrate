@@ -5,6 +5,7 @@ import fr.bobinho.bcrate.api.event.BEvent;
 import fr.bobinho.bcrate.util.crate.CrateManager;
 import fr.bobinho.bcrate.util.player.PlayerManager;
 import fr.bobinho.bcrate.util.prize.Prize;
+import org.bukkit.event.player.PlayerAttemptPickupItemEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
@@ -27,6 +28,7 @@ public class PlayerListener {
     public static void registerEvents() {
         onJoin();
         onQuit();
+        onPick();
     }
 
     /**
@@ -59,6 +61,15 @@ public class PlayerListener {
                     CrateManager.stream().forEach(crate -> crate.structure().stream()
                             .forEach(structure -> structure.getRenderer().removeShownViewers(event.getPlayer().getUniqueId())));
                 });
+    }
+
+    /**
+     * Listens player pick
+     */
+    private static void onPick() {
+        BEvent.registerEvent(PlayerAttemptPickupItemEvent.class)
+                .filter(event -> PlayerManager.isOpeningCrate(event.getPlayer().getUniqueId()))
+                .consume(event -> event.setCancelled(true));
     }
 
 }
