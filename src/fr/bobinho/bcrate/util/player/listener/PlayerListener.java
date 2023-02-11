@@ -5,6 +5,7 @@ import fr.bobinho.bcrate.api.event.BEvent;
 import fr.bobinho.bcrate.util.crate.CrateManager;
 import fr.bobinho.bcrate.util.player.PlayerManager;
 import fr.bobinho.bcrate.util.prize.Prize;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerAttemptPickupItemEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -29,6 +30,7 @@ public class PlayerListener {
         onJoin();
         onQuit();
         onPick();
+        onInteractWithInventory();
     }
 
     /**
@@ -69,6 +71,15 @@ public class PlayerListener {
     private static void onPick() {
         BEvent.registerEvent(PlayerAttemptPickupItemEvent.class)
                 .filter(event -> PlayerManager.isOpeningCrate(event.getPlayer().getUniqueId()))
+                .consume(event -> event.setCancelled(true));
+    }
+
+    /**
+     * Listens player interact with inventory
+     */
+    private static void onInteractWithInventory() {
+        BEvent.registerEvent(InventoryClickEvent.class)
+                .filter(event -> PlayerManager.isOpeningCrate(event.getWhoClicked().getUniqueId()))
                 .consume(event -> event.setCancelled(true));
     }
 

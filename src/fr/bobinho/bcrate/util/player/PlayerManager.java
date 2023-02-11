@@ -10,6 +10,7 @@ import fr.bobinho.bcrate.util.key.KeyManager;
 import fr.bobinho.bcrate.util.player.listener.PlayerListener;
 import fr.bobinho.bcrate.util.prize.Prize;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
@@ -182,13 +183,12 @@ public class PlayerManager {
         BValidate.notNull(uuid);
         BValidate.notNull(crate);
 
-        return IntStream.range(0, crate.prizes().size() - 1)
-            .boxed()
-            .allMatch(i -> IntStream.range(i + 1, crate.prizes().size()).allMatch(j ->
-                Optional.ofNullable(Bukkit.getPlayer(uuid))
-                    .map(player -> cloneInventory(player.getInventory()).addItem(new ItemStack[]{crate.prizes().get(i).item().get(), crate.prizes().get(j).item().get()}).isEmpty())
-                    .orElse(false)
-            ));
+        return Optional.ofNullable(Bukkit.getPlayer(uuid))
+                .map(player -> IntStream.range(0, crate.prizes().size())
+                        .boxed()
+                        .allMatch(i -> IntStream.range(i, crate.prizes().size())
+                                .allMatch(j -> cloneInventory(player.getInventory()).addItem(new ItemStack[]{crate.prizes().get(i).item().get(), crate.prizes().get(j).item().get()}).isEmpty())))
+                .orElse(false);
     }
 
     /**
