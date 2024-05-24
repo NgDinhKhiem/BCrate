@@ -37,10 +37,9 @@ public class BArmorStandEntity extends BArmoredEntity<BArmorStandEntity> {
      * @return the armor stand entity
      */
     public @Nonnull BArmorStandEntity setHeadPose(float x, float y, float z) {
-        getEntity(EntityArmorStand.class).setHeadPose(new Vector3f(x, y, z));
+        getEntity(EntityArmorStand.class).a(new Vector3f(x, y, z));
 
-        BPacket.send(new PacketPlayOutEntityMetadata(getId(), getEntity().getDataWatcher(), true), getRenderer().getShownViewersAsPlayer());
-
+        //BPacket.send(new PacketPlayOutEntityMetadata(getId(), getEntity().getDataWatcher(), true), getRenderer().getShownViewersAsPlayer());
         return this;
     }
 
@@ -53,9 +52,9 @@ public class BArmorStandEntity extends BArmoredEntity<BArmorStandEntity> {
      * @return the armor stand entity
      */
     public @Nonnull BArmorStandEntity setRightArmPose(float x, float y, float z) {
-        getEntity(EntityArmorStand.class).setRightArmPose(new Vector3f(x, y, z));
+        getEntity(EntityArmorStand.class).d(new Vector3f(x, y, z));
 
-        BPacket.send(new PacketPlayOutEntityMetadata(getId(), getEntity().getDataWatcher(), true), getRenderer().getShownViewersAsPlayer());
+        //BPacket.send(new PacketPlayOutEntityMetadata(getId(), getEntity().getDataWatcher(), true), getRenderer().getShownViewersAsPlayer());
 
         return this;
     }
@@ -69,9 +68,9 @@ public class BArmorStandEntity extends BArmoredEntity<BArmorStandEntity> {
      * @return the armor stand entity
      */
     public @Nonnull BArmorStandEntity setLeftArmPose(float x, float y, float z) {
-        getEntity(EntityArmorStand.class).setLeftArmPose(new Vector3f(x, y, z));
+        getEntity(EntityArmorStand.class).c(new Vector3f(x, y, z));
 
-        BPacket.send(new PacketPlayOutEntityMetadata(getId(), getEntity().getDataWatcher(), true), getRenderer().getShownViewersAsPlayer());
+        //BPacket.send(new PacketPlayOutEntityMetadata(getId(), getEntity().getDataWatcher(), true), getRenderer().getShownViewersAsPlayer());
 
         return this;
     }

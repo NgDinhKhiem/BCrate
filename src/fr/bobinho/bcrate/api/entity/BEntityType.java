@@ -11,7 +11,7 @@ import net.minecraft.world.entity.projectile.EntityFireball;
 import net.minecraft.world.entity.projectile.EntityLargeFireball;
 import net.minecraft.world.entity.projectile.EntitySmallFireball;
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.v1_17_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_20_R3.CraftWorld;
 
 import javax.annotation.Nonnull;
 
@@ -61,12 +61,12 @@ public enum BEntityType {
         BValidate.notNull(location);
 
         return switch (this) {
-            case GHAST -> (T) new EntityGhast(EntityTypes.F, ((CraftWorld) location.getWorld()).getHandle());
-            case FALLING_BLOCK -> (T) new EntityFallingBlock(EntityTypes.C, ((CraftWorld) location.getWorld()).getHandle());
-            case ARMOR_STAND -> (T) new EntityArmorStand(EntityTypes.c, ((CraftWorld) location.getWorld()).getHandle());
-            case SMALL_FIREBALL -> (T) new EntitySmallFireball(EntityTypes.aE, ((CraftWorld) location.getWorld()).getHandle());
-            case LARGE_FIREBALL -> (T) new EntityLargeFireball(EntityTypes.S, ((CraftWorld) location.getWorld()).getHandle());
-            case DRAGON_FIREBALL -> (T) new EntityDragonFireball(EntityTypes.r, ((CraftWorld) location.getWorld()).getHandle());
+            case GHAST -> (T) new EntityGhast(EntityTypes.R, ((CraftWorld) location.getWorld()).getHandle());
+            case FALLING_BLOCK -> (T) new EntityFallingBlock(EntityTypes.M, ((CraftWorld) location.getWorld()).getHandle());
+            case ARMOR_STAND -> (T) new EntityArmorStand(EntityTypes.d, ((CraftWorld) location.getWorld()).getHandle());
+            case SMALL_FIREBALL -> (T) new EntitySmallFireball(EntityTypes.aN, ((CraftWorld) location.getWorld()).getHandle());
+            case LARGE_FIREBALL -> (T) new EntityLargeFireball(EntityTypes.ah, ((CraftWorld) location.getWorld()).getHandle());
+            case DRAGON_FIREBALL -> (T) new EntityDragonFireball(EntityTypes.y, ((CraftWorld) location.getWorld()).getHandle());
         };
     }
 }

@@ -5,7 +5,7 @@ import fr.bobinho.bcrate.api.validate.BValidate;
 import net.minecraft.network.protocol.Packet;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.v1_17_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_20_R3.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
 import javax.annotation.Nonnull;
@@ -33,7 +33,7 @@ public final class BPacket {
         //Sends packet
         Arrays.stream(players)
                 .filter(player -> player != null && player.isOnline())
-                .forEach(player -> ((CraftPlayer) player).getHandle().b.sendPacket(packet));
+                .forEach(player -> ((CraftPlayer) player).getHandle().c.b(packet));
     }
 
     /**
@@ -50,7 +50,7 @@ public final class BPacket {
         Arrays.stream(players)
                 .map(Bukkit::getPlayer)
                 .filter(player -> player != null && player.isOnline())
-                .forEach(player -> ((CraftPlayer) player).getHandle().b.sendPacket(packet));
+                .forEach(player -> ((CraftPlayer) player).getHandle().c.b(packet));
     }
 
     /**
@@ -66,7 +66,7 @@ public final class BPacket {
         //Sends packet.
         players.stream()
                 .filter(player -> player != null && player.isOnline())
-                .forEach(player -> ((CraftPlayer) player).getHandle().b.sendPacket(packet));
+                .forEach(player -> ((CraftPlayer) player).getHandle().c.b(packet));
     }
 
     /**
@@ -83,7 +83,7 @@ public final class BPacket {
         //Sends packet.
         Objects.requireNonNull(location.getWorld()).getNearbyEntities(location, radius, radius, radius).stream()
                 .filter(entity -> entity instanceof Player)
-                .forEach(player -> ((CraftPlayer) player).getHandle().b.sendPacket(packet));
+                .forEach(player -> ((CraftPlayer) player).getHandle().c.b(packet));
     }
 
     /**

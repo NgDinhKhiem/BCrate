@@ -3,7 +3,7 @@ package fr.bobinho.bcrate.api.location;
 import fr.bobinho.bcrate.api.validate.BValidate;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.v1_17_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_20_R3.CraftWorld;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;

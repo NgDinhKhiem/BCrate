@@ -6,6 +6,7 @@ import fr.bobinho.bcrate.api.packet.BPacket;
 import fr.bobinho.bcrate.api.renderer.BRenderer;
 import fr.bobinho.bcrate.api.validate.BValidate;
 import net.minecraft.network.protocol.game.*;
+import net.minecraft.network.syncher.DataWatcher;
 import net.minecraft.world.entity.Entity;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -41,7 +42,9 @@ public class BEntity<T extends BEntity<T>> {
 
         this.uuid = UUID.randomUUID();
         this.entity = entity;
-        this.entity.setLocation(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
+        this.entity.a_(location.getX(), location.getY(), location.getZ());
+        this.entity.r(location.getYaw());
+        this.entity.s(location.getPitch());
         this.renderer = new BRenderer(location, this::show, this::hide);
     }
 
@@ -57,7 +60,10 @@ public class BEntity<T extends BEntity<T>> {
 
         this.uuid = UUID.randomUUID();
         this.entity = entityType.create(location);
-        this.entity.setLocation(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
+        //this.entity.setLocation(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
+        this.entity.a_(location.getX(), location.getY(), location.getZ());
+        this.entity.r(location.getYaw());
+        this.entity.s(location.getPitch());
         this.renderer = new BRenderer(location, this::show, this::hide);
     }
 
@@ -98,7 +104,7 @@ public class BEntity<T extends BEntity<T>> {
      * @return the id
      */
     public final int getId() {
-        return entity.getId();
+        return entity.aj();
     }
 
     /**
@@ -123,7 +129,7 @@ public class BEntity<T extends BEntity<T>> {
      * Updates the entity metadata
      */
     public final void updateMetadata() {
-        BPacket.send(new PacketPlayOutEntityMetadata(entity.getId(), entity.getDataWatcher(), true), renderer.getShownViewersAsPlayer());
+        //BPacket.send(new PacketPlayOutEntityMetadata(entity.aj(), entity.getDataWatcher(), true), renderer.getShownViewersAsPlayer());
     }
 
     /**
@@ -133,7 +139,7 @@ public class BEntity<T extends BEntity<T>> {
      * @return the entity
      */
     public final @Nonnull T setInvisible(boolean flag) {
-        entity.setInvisible(flag);
+        entity.j(flag);
 
         return (T) this;
     }
@@ -145,7 +151,7 @@ public class BEntity<T extends BEntity<T>> {
      * @return the entity
      */
     public final @Nonnull T setInvulnerable(boolean flag) {
-        entity.setInvulnerable(flag);
+        entity.j(flag);
 
         return (T) this;
     }
@@ -157,7 +163,7 @@ public class BEntity<T extends BEntity<T>> {
      * @return the entity
      */
     public final @Nonnull T setNoGravity(boolean flag) {
-        entity.setNoGravity(flag);
+        entity.e(flag);
 
         return (T) this;
     }
@@ -169,7 +175,7 @@ public class BEntity<T extends BEntity<T>> {
      * @return the entity
      */
     public final @Nonnull T setSilent(boolean flag) {
-        entity.setSilent(flag);
+        entity.d(flag);
 
         return (T) this;
     }
@@ -189,7 +195,7 @@ public class BEntity<T extends BEntity<T>> {
 
         //Sends the show packet
         BPacket.send(new PacketPlayOutSpawnEntity(entity), players);
-        BPacket.send(new PacketPlayOutEntityMetadata(entity.getId(), entity.getDataWatcher(), true), players);
+        //BPacket.send(new PacketPlayOutEntityMetadata(entity.aj(), List.of(entity.an())), players);
 
         //Triggers the on show
         onShow(players);
@@ -216,7 +222,7 @@ public class BEntity<T extends BEntity<T>> {
         }
 
         //Sends the hide packet
-        BPacket.send(new PacketPlayOutEntityDestroy(entity.getId()), players);
+        BPacket.send(new PacketPlayOutEntityDestroy(entity.aj()), players);
 
         //Triggers the on hide
         onHide(players);
@@ -329,7 +335,10 @@ public class BEntity<T extends BEntity<T>> {
         BValidate.notNull(location);
 
         //Sets base fields
-        entity.setLocation(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
+        //entity.setLocation(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
+        this.entity.a_(location.getX(), location.getY(), location.getZ());
+        this.entity.r(location.getYaw());
+        this.entity.s(location.getPitch());
         renderer.setLocation(location);
 
         //If players are empty, no need to continue
