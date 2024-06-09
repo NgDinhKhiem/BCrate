@@ -38,8 +38,7 @@ public class BArmorStandEntity extends BArmoredEntity<BArmorStandEntity> {
      */
     public @Nonnull BArmorStandEntity setHeadPose(float x, float y, float z) {
         getEntity(EntityArmorStand.class).a(new Vector3f(x, y, z));
-
-        //BPacket.send(new PacketPlayOutEntityMetadata(getId(), getEntity().getDataWatcher(), true), getRenderer().getShownViewersAsPlayer());
+        BPacket.send(new PacketPlayOutEntityMetadata(getId(), this.getEntity().an().c()), getRenderer().getShownViewersAsPlayer());
         return this;
     }
 
@@ -53,9 +52,7 @@ public class BArmorStandEntity extends BArmoredEntity<BArmorStandEntity> {
      */
     public @Nonnull BArmorStandEntity setRightArmPose(float x, float y, float z) {
         getEntity(EntityArmorStand.class).d(new Vector3f(x, y, z));
-
-        //BPacket.send(new PacketPlayOutEntityMetadata(getId(), getEntity().getDataWatcher(), true), getRenderer().getShownViewersAsPlayer());
-
+        BPacket.send(new PacketPlayOutEntityMetadata(getId(), this.getEntity().an().c()), getRenderer().getShownViewersAsPlayer());
         return this;
     }
 
@@ -69,9 +66,7 @@ public class BArmorStandEntity extends BArmoredEntity<BArmorStandEntity> {
      */
     public @Nonnull BArmorStandEntity setLeftArmPose(float x, float y, float z) {
         getEntity(EntityArmorStand.class).c(new Vector3f(x, y, z));
-
-        //BPacket.send(new PacketPlayOutEntityMetadata(getId(), getEntity().getDataWatcher(), true), getRenderer().getShownViewersAsPlayer());
-
+        BPacket.send(new PacketPlayOutEntityMetadata(getId(), this.getEntity().an().c()), getRenderer().getShownViewersAsPlayer());
         return this;
     }
 

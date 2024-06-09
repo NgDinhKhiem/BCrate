@@ -129,7 +129,7 @@ public class BEntity<T extends BEntity<T>> {
      * Updates the entity metadata
      */
     public final void updateMetadata() {
-        //BPacket.send(new PacketPlayOutEntityMetadata(entity.aj(), entity.getDataWatcher(), true), renderer.getShownViewersAsPlayer());
+        BPacket.send(new PacketPlayOutEntityMetadata(getId(), this.getEntity().an().c()), getRenderer().getShownViewersAsPlayer());
     }
 
     /**
@@ -196,7 +196,7 @@ public class BEntity<T extends BEntity<T>> {
         //Sends the show packet
         BPacket.send(new PacketPlayOutSpawnEntity(entity), players);
         //BPacket.send(new PacketPlayOutEntityMetadata(entity.aj(), List.of(entity.an())), players);
-
+        BPacket.send(new PacketPlayOutEntityMetadata(getId(), this.getEntity().an().c()), getRenderer().getShownViewersAsPlayer());
         //Triggers the on show
         onShow(players);
     }
