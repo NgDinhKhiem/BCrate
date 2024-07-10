@@ -123,12 +123,12 @@ public final class BCrateCore extends JavaPlugin {
     @Override
     public void onDisable() {
         bLogger.info("Unloading the plugin...");
-
         KeyManager.unregister();
         TagManager.unregister();
         PlayerManager.unregister();
         CrateManager.unregister();
         PrizeManager.unregister();
+        //TODO: Reset and correct data is required
     }
 
     /**
